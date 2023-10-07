@@ -103,4 +103,23 @@ contract DSROracleTest is Test {
         oracle.getConversionRateLinearApprox(block.timestamp - 1 days);
     }
 
+    function test_getConversionRateFuzz(uint256 rate, uint256 duration) public {
+        rate = bound(rate, 0, 1e27);            // Bound by 0-100% APR
+        duration = bound(duration, 0, 1 days);  // Bound by 1 day
+
+        pot.setDSR(rate / 365 days + 1e27);
+        oracle.refresh();
+
+        skip(duration);
+
+        // Error bounds
+        uint256 exact = oracle.getConversionRate();
+        assertApproxEqRel(exact, oracle.getConversionRateBinomialApprox(), 0.00000000001e18, "binomial out of range");
+        assertApproxEqRel(exact, oracle.getConversionRateLinearApprox(), 0.00005e18, "linear out of range");
+
+        // Binomial and then linear should always underestimate
+        assertGe(exact, oracle.getConversionRateBinomialApprox());
+        assertGe(oracle.getConversionRateBinomialApprox(), oracle.getConversionRateLinearApprox());
+    }
+
 }
