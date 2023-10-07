@@ -54,53 +54,66 @@ contract DSROracleTest is Test {
 
     function test_getConversionRate() public {
         assertEq(oracle.getConversionRate(), 1e27);
-        assertEq(oracle.getConversionRate(block.timestamp + 1 days), 1e27);
+        assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1e27);
 
         pot.setDSR(DSR_FIVE_PCT_APY);
         pot.setChi(1.03e27);
         oracle.refresh();
 
         assertEq(oracle.getConversionRate(), 1.03e27);
-        assertEq(oracle.getConversionRate(block.timestamp + 1 days), 1.030137691035626843560919094e27);
+        assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1.081499999999999999959902249e27);
     }
 
     function test_getConversionRate_pastRevert() public {
         vm.expectRevert();
-        oracle.getConversionRate(block.timestamp - 1 days);
+        oracle.getConversionRate(block.timestamp - 365 days);
     }
 
     function test_getConversionRateBinomialApprox() public {
         assertEq(oracle.getConversionRateBinomialApprox(), 1e27);
-        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 1 days), 1e27);
+        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1e27);
 
         pot.setDSR(DSR_FIVE_PCT_APY);
         pot.setChi(1.03e27);
         oracle.refresh();
 
         assertEq(oracle.getConversionRateBinomialApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 1 days), 1.030137691035548972298470224e27);
+        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1.081495968383924399665215760e27);
     }
 
     function test_getConversionRateBinomialApprox_pastRevert() public {
         vm.expectRevert();
-        oracle.getConversionRateBinomialApprox(block.timestamp - 1 days);
+        oracle.getConversionRateBinomialApprox(block.timestamp - 365 days);
     }
 
     function test_getConversionRateLinearApprox() public {
         assertEq(oracle.getConversionRateLinearApprox(), 1e27);
-        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 1 days), 1e27);
+        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1e27);
 
         pot.setDSR(DSR_FIVE_PCT_APY);
         pot.setChi(1.03e27);
         oracle.refresh();
 
         assertEq(oracle.getConversionRateLinearApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 1 days), 1.030133671682759381555507200e27);
+        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);
     }
 
     function test_getConversionRateLinearApprox_pastRevert() public {
         vm.expectRevert();
-        oracle.getConversionRateLinearApprox(block.timestamp - 1 days);
+        oracle.getConversionRateLinearApprox(block.timestamp - 365 days);
+    }
+
+    function test_binomialAccuracyLongDuration() public {
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+
+        // Even after a year the binomial is accurate to within 0.001%
+        assertApproxEqRel(
+            oracle.getConversionRate(block.timestamp + 365 days),
+            oracle.getConversionRateBinomialApprox(block.timestamp + 365 days),
+            0.00001e18
+        );
     }
 
     function test_getConversionRateFuzz(uint256 rate, uint256 duration) public {
