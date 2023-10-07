@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import { IDSROracle } from './interfaces/IDSROracle.sol';
 
 /**
- * @title DSROracleBase
+ * @title  DSROracleBase
  * @notice Base functionality for all DSR oracles.
  */
 abstract contract DSROracleBase is IDSROracle {
@@ -30,7 +30,9 @@ abstract contract DSROracleBase is IDSROracle {
     }
 
     function getAPR() external view returns (uint256) {
-        return (_data.dsr - RAY) * 365 days;
+        unchecked {
+            return (_data.dsr - RAY) * 365 days;
+        }
     }
 
     function getConversionRate() external view returns (uint256) {
@@ -41,24 +43,6 @@ abstract contract DSROracleBase is IDSROracle {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         return (timestamp > rho) ? _rpow(d.dsr, timestamp - rho) * d.chi / RAY : d.chi;
-    }
-
-    function getConversionRateLinearApprox() external view returns (uint256) {
-        return getConversionRateLinearApprox(block.timestamp);
-    }
-
-    function getConversionRateLinearApprox(uint256 timestamp) public view returns (uint256) {
-        IDSROracle.PotData memory d = _data;
-        uint256 rho = d.rho;
-        if (timestamp > rho) {
-            uint256 rate;
-            unchecked {
-                rate = d.dsr - RAY;
-            }
-            return rate * (timestamp - rho) + d.chi;
-        } else {
-            return d.chi;
-        }
     }
 
     function getConversionRateBinomialApprox() external view returns (uint256) {
@@ -100,6 +84,24 @@ abstract contract DSROracleBase is IDSROracle {
         }
 
         return d.chi * (RAY + (rate * exp) + secondTerm + thirdTerm) / RAY;
+    }
+
+    function getConversionRateLinearApprox() external view returns (uint256) {
+        return getConversionRateLinearApprox(block.timestamp);
+    }
+
+    function getConversionRateLinearApprox(uint256 timestamp) public view returns (uint256) {
+        IDSROracle.PotData memory d = _data;
+        uint256 rho = d.rho;
+        if (timestamp > rho) {
+            uint256 rate;
+            unchecked {
+                rate = d.dsr - RAY;
+            }
+            return rate * (timestamp - rho) + d.chi;
+        } else {
+            return d.chi;
+        }
     }
 
     function _rpow(uint256 x, uint256 n) internal pure returns (uint256 z) {

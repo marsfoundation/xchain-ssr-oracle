@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 /**
- * @title IDSROracle
+ * @title  IDSROracle
  * @notice Consolidated DSR reporting along with some convenience functions.
  */
 interface IDSROracle {
@@ -27,12 +27,12 @@ interface IDSROracle {
 
     function getConversionRate(uint256 timestamp) external view returns (uint256);
 
-    function getConversionRateLinearApprox() external view returns (uint256);
-
-    function getConversionRateLinearApprox(uint256 timestamp) external view returns (uint256);
-
     function getConversionRateBinomialApprox() external view returns (uint256);
 
     function getConversionRateBinomialApprox(uint256 timestamp) external view returns (uint256);
+
+    function getConversionRateLinearApprox() external view returns (uint256);
+
+    function getConversionRateLinearApprox(uint256 timestamp) external view returns (uint256);
 
 }
