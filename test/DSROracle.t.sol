@@ -64,7 +64,17 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1.081499999999999999959902249e27);
     }
 
-    function test_gas_getConversionRate() public {
+    function test_gas_getConversionRate_1hour() public {
+        vm.pauseGasMetering();
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+        vm.resumeGasMetering();
+
+        oracle.getConversionRate(block.timestamp + 1 hours);
+    }
+
+    function test_gas_getConversionRate_1year() public {
         vm.pauseGasMetering();
         pot.setDSR(DSR_FIVE_PCT_APY);
         pot.setChi(1.03e27);
@@ -91,7 +101,17 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1.081495968383924399665215760e27);
     }
 
-    function test_gas_getConversionRateBinomialApprox() public {
+    function test_gas_getConversionRateBinomialApprox_1hour() public {
+        vm.pauseGasMetering();
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+        vm.resumeGasMetering();
+
+        oracle.getConversionRateBinomialApprox(block.timestamp + 1 hours);
+    }
+
+    function test_gas_getConversionRateBinomialApprox_1year() public {
         vm.pauseGasMetering();
         pot.setDSR(DSR_FIVE_PCT_APY);
         pot.setChi(1.03e27);
@@ -118,7 +138,17 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);
     }
 
-    function test_gas_getConversionRateLinearApprox() public {
+    function test_gas_getConversionRateLinearApprox_1hour() public {
+        vm.pauseGasMetering();
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+        vm.resumeGasMetering();
+
+        oracle.getConversionRateLinearApprox(block.timestamp + 1 hours);
+    }
+
+    function test_gas_getConversionRateLinearApprox_1year() public {
         vm.pauseGasMetering();
         pot.setDSR(DSR_FIVE_PCT_APY);
         pot.setChi(1.03e27);
