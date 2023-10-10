@@ -49,6 +49,7 @@ abstract contract DSROracleBase is IDSROracle {
         return getConversionRateBinomialApprox(block.timestamp);
     }
 
+    // Copied and slightly modified from https://github.com/aave/aave-v3-core/blob/42103522764546a4eeb856b741214fa5532be52a/contracts/protocol/libraries/math/MathUtils.sol#L50
     function getConversionRateBinomialApprox(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 exp = timestamp - d.rho;
@@ -104,6 +105,7 @@ abstract contract DSROracleBase is IDSROracle {
         }
     }
 
+    // Copied from https://github.com/makerdao/sdai/blob/e6f8cfa1d638b1ef1c6187a1d18f73b21d2754a2/src/SavingsDai.sol#L118
     function _rpow(uint256 x, uint256 n) internal pure returns (uint256 z) {
         assembly {
             switch x case 0 {switch n case 0 {z := RAY} default {z := 0}}
