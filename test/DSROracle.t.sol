@@ -64,6 +64,16 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1.081499999999999999959902249e27);
     }
 
+    function test_gas_getConversionRate() public {
+        vm.pauseGasMetering();
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+        vm.resumeGasMetering();
+
+        oracle.getConversionRate(block.timestamp + 365 days);
+    }
+
     function test_getConversionRate_pastRevert() public {
         vm.expectRevert();
         oracle.getConversionRate(block.timestamp - 365 days);
@@ -81,6 +91,16 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1.081495968383924399665215760e27);
     }
 
+    function test_gas_getConversionRateBinomialApprox() public {
+        vm.pauseGasMetering();
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+        vm.resumeGasMetering();
+
+        oracle.getConversionRateBinomialApprox(block.timestamp + 365 days);
+    }
+
     function test_getConversionRateBinomialApprox_pastRevert() public {
         vm.expectRevert();
         oracle.getConversionRateBinomialApprox(block.timestamp - 365 days);
@@ -96,6 +116,16 @@ contract DSROracleTest is Test {
 
         assertEq(oracle.getConversionRateLinearApprox(), 1.03e27);
         assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);
+    }
+
+    function test_gas_getConversionRateLinearApprox() public {
+        vm.pauseGasMetering();
+        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setChi(1.03e27);
+        oracle.refresh();
+        vm.resumeGasMetering();
+
+        oracle.getConversionRateLinearApprox(block.timestamp + 365 days);
     }
 
     function test_getConversionRateLinearApprox_pastRevert() public {
