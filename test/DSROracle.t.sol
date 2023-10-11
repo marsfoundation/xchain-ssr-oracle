@@ -61,7 +61,7 @@ contract DSROracleTest is Test {
         oracle.refresh();
 
         assertEq(oracle.getConversionRate(), 1.03e27);
-        assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1.081499999999999999959902249e27);
+        assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1.081499999999999999959902249e27);   // 5% interest on 1.03 value = 1.0815
     }
 
     function test_gas_getConversionRate_1hour() public {
@@ -98,7 +98,7 @@ contract DSROracleTest is Test {
         oracle.refresh();
 
         assertEq(oracle.getConversionRateBinomialApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1.081495968383924399665215760e27);
+        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1.081495968383924399665215760e27);   // 5% interest on 1.03 value = 1.0815
     }
 
     function test_gas_getConversionRateBinomialApprox_1hour() public {
@@ -135,7 +135,7 @@ contract DSROracleTest is Test {
         oracle.refresh();
 
         assertEq(oracle.getConversionRateLinearApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);
+        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);   // 5% interest on 1.03 value = 1.0815, but linear approx is 1.0788
     }
 
     function test_gas_getConversionRateLinearApprox_1hour() public {
