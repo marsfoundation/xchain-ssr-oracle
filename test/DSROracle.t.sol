@@ -23,8 +23,8 @@ import { DSROracle } from "../src/DSROracle.sol";
 
 contract DSROracleTest is Test {
 
-    uint256 constant DSR_FIVE_PCT_APY = 1.000000001547125957863212448e27;
-    uint256 constant DSR_FIVE_PCT_APR = 0.048790164207174267760128000e27;
+    uint256 constant FIVE_PCT_APY_DSR = 1.000000001547125957863212448e27;
+    uint256 constant FIVE_PCT_APY_APR = 0.048790164207174267760128000e27;
 
     PotMock   pot;
     DSROracle oracle;
@@ -43,20 +43,20 @@ contract DSROracleTest is Test {
     function test_apr() public {
         assertEq(oracle.getAPR(), 0);
 
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
 
         assertEq(oracle.getAPR(), 0);
 
         oracle.refresh();
 
-        assertEq(oracle.getAPR(), DSR_FIVE_PCT_APR);
+        assertEq(oracle.getAPR(), FIVE_PCT_APY_APR);
     }
 
     function test_getConversionRate() public {
         assertEq(oracle.getConversionRate(), 1e27);
         assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1e27);
 
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
@@ -66,7 +66,7 @@ contract DSROracleTest is Test {
 
     function test_gas_getConversionRate_1hour() public {
         vm.pauseGasMetering();
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
         vm.resumeGasMetering();
@@ -76,7 +76,7 @@ contract DSROracleTest is Test {
 
     function test_gas_getConversionRate_1year() public {
         vm.pauseGasMetering();
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
         vm.resumeGasMetering();
@@ -93,7 +93,7 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRateBinomialApprox(), 1e27);
         assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1e27);
 
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
@@ -103,7 +103,7 @@ contract DSROracleTest is Test {
 
     function test_gas_getConversionRateBinomialApprox_1hour() public {
         vm.pauseGasMetering();
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
         vm.resumeGasMetering();
@@ -113,7 +113,7 @@ contract DSROracleTest is Test {
 
     function test_gas_getConversionRateBinomialApprox_1year() public {
         vm.pauseGasMetering();
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
         vm.resumeGasMetering();
@@ -130,7 +130,7 @@ contract DSROracleTest is Test {
         assertEq(oracle.getConversionRateLinearApprox(), 1e27);
         assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1e27);
 
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
@@ -140,7 +140,7 @@ contract DSROracleTest is Test {
 
     function test_gas_getConversionRateLinearApprox_1hour() public {
         vm.pauseGasMetering();
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
         vm.resumeGasMetering();
@@ -150,7 +150,7 @@ contract DSROracleTest is Test {
 
     function test_gas_getConversionRateLinearApprox_1year() public {
         vm.pauseGasMetering();
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
         vm.resumeGasMetering();
@@ -164,7 +164,7 @@ contract DSROracleTest is Test {
     }
 
     function test_binomialAccuracyLongDuration() public {
-        pot.setDSR(DSR_FIVE_PCT_APY);
+        pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
