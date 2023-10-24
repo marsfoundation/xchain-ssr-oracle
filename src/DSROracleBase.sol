@@ -13,6 +13,14 @@ abstract contract DSROracleBase is IDSROracle {
 
     IDSROracle.PotData internal _data;
 
+    function _setPotData(IDSROracle.PotData memory data) internal {
+        // Enforce non-decreasing values of rho in case of message reordering
+        // The same timestamp is allowed as the other values will only change upon increasing rho
+        require(data.rho >= _data.rho, 'DSROracleBase/invalid-rho');
+
+        _data = data;
+    }
+
     function getPotData() external view returns (IDSROracle.PotData memory) {
         return _data;
     }

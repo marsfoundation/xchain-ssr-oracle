@@ -1,13 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import { IPot } from './interfaces/IPot.sol';
 import { DSROracleBase, IDSROracle } from './DSROracleBase.sol';
-
-interface IPot {
-    function dsr() external view returns (uint256);
-    function chi() external view returns (uint256);
-    function rho() external view returns (uint256);
-}
 
 /**
  * @title  DSROracle
@@ -29,11 +24,11 @@ contract DSROracle is DSROracleBase {
     *         `refresh()` should be called immediately whenever the `dsr` value changes.
     */
     function refresh() public {
-        _data = IDSROracle.PotData({
+        _setPotData(IDSROracle.PotData({
             dsr: uint96(pot.dsr()),
             chi: uint120(pot.chi()),
             rho: uint40(pot.rho())
-        });
+        }));
     }
 
 }
