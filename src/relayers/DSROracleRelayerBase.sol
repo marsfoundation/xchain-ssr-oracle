@@ -10,11 +10,11 @@ import { IPot } from '../interfaces/IPot.sol';
  */
 abstract contract DSROracleRelayerBase {
 
-    IPot                   public immutable pot;
-    IDSROracleDataReceiver public immutable l2Oracle;
+    IPot    public immutable pot;
+    address public immutable l2Oracle;
 
-    constructor(address _pot, IDSROracleDataReceiver _l2Oracle) {
-        pot = IPot(_pot);
+    constructor(address _pot, address _l2Oracle) {
+        pot      = IPot(_pot);
         l2Oracle = _l2Oracle;
     }
 
