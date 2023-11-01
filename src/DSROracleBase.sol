@@ -42,7 +42,9 @@ abstract contract DSROracleBase is IDSROracle {
     function getConversionRate(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
+        if (timestamp == rho) return d.chi;
         require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
+        
         return (timestamp > rho) ? _rpow(d.dsr, timestamp - rho) * uint256(d.chi) / RAY : d.chi;
     }
 
@@ -54,10 +56,9 @@ abstract contract DSROracleBase is IDSROracle {
     function getConversionRateBinomialApprox(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
+        if (timestamp == rho) return d.chi;
         require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
-        if (timestamp == rho) {
-            return d.chi;
-        }
+        
         uint256 exp;
         uint256 rate;
         unchecked {
@@ -97,18 +98,16 @@ abstract contract DSROracleBase is IDSROracle {
     function getConversionRateLinearApprox(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
+        if (timestamp == rho) return d.chi;
         require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
-        if (timestamp > rho) {
-            uint256 duration;
-            uint256 rate;
-            unchecked {
-                duration =  timestamp - rho;
-                rate = uint256(d.dsr) - RAY;
-            }
-            return (rate * duration + RAY) * uint256(d.chi) / RAY;
-        } else {
-            return d.chi;
+        
+        uint256 duration;
+        uint256 rate;
+        unchecked {
+            duration =  timestamp - rho;
+            rate = uint256(d.dsr) - RAY;
         }
+        return (rate * duration + RAY) * uint256(d.chi) / RAY;
     }
 
     // Copied from https://github.com/makerdao/sdai/blob/e6f8cfa1d638b1ef1c6187a1d18f73b21d2754a2/src/SavingsDai.sol#L118
