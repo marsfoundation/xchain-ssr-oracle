@@ -163,7 +163,7 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateFuzz(uint256 rate, uint256 duration) public {
-        rate = bound(rate, 0, 1e27);            // Bound by 0-100% APR
+        rate     = bound(rate,     0, 1e27);    // Bound by 0-100% APR
         duration = bound(duration, 0, 1 days);  // Bound by 1 day
 
         pot.setDSR(rate / 365 days + 1e27);
