@@ -174,11 +174,11 @@ contract DSROracleTest is Test {
         // Error bounds
         uint256 exact = oracle.getConversionRate();
         assertApproxEqRel(exact, oracle.getConversionRateBinomialApprox(), 0.00000000001e18, "binomial out of range");
-        assertApproxEqRel(exact, oracle.getConversionRateLinearApprox(), 0.00005e18, "linear out of range");
+        assertApproxEqRel(exact, oracle.getConversionRateLinearApprox(),   0.00005e18,       "linear out of range");
 
         // Binomial and then linear should always underestimate
         assertGe(exact, oracle.getConversionRateBinomialApprox());
-        assertGe(oracle.getConversionRateBinomialApprox(), oracle.getConversionRateLinearApprox());
+        assertGe(exact, oracle.getConversionRateLinearApprox());
     }
 
 }
