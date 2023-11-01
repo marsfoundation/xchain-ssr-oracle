@@ -73,7 +73,7 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRate_pastRevert() public {
-        vm.expectRevert(stdError.arithmeticError);
+        vm.expectRevert("DSROracleBase/invalid-timestamp");
         oracle.getConversionRate(block.timestamp - 365 days);
     }
 
@@ -110,7 +110,7 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateBinomialApprox_pastRevert() public {
-        vm.expectRevert(stdError.arithmeticError);
+        vm.expectRevert("DSROracleBase/invalid-timestamp");
         oracle.getConversionRateBinomialApprox(block.timestamp - 365 days);
     }
 
@@ -147,7 +147,7 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateLinearApprox_pastRevert() public {
-        vm.expectRevert(stdError.arithmeticError);
+        vm.expectRevert("DSROracleBase/invalid-timestamp");
         oracle.getConversionRateLinearApprox(block.timestamp - 365 days);
     }
 
