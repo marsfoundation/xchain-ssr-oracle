@@ -16,6 +16,8 @@ contract DSROracleTest is Test {
     DSROracle oracle;
 
     function setUp() public {
+        skip(30 * (365 days));  // Skip 30 years to avoid underflow
+
         pot = new PotMock();
         oracle = new DSROracle(address(pot));
     }
@@ -121,7 +123,7 @@ contract DSROracleTest is Test {
         oracle.refresh();
 
         assertEq(oracle.getConversionRateLinearApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);   // 5% interest on 1.03 value = 1.0815, but linear approx is 1.0788
+        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.080253869133389495792931840e27);   // 5% interest on 1.03 value = 1.0815, but linear approx is 1.0802
     }
 
     function test_gas_getConversionRateLinearApprox_1hour() public {
@@ -171,14 +173,17 @@ contract DSROracleTest is Test {
 
         skip(duration);
 
-        // Error bounds
         uint256 exact = oracle.getConversionRate();
-        assertApproxEqRel(exact, oracle.getConversionRateBinomialApprox(), 0.00000000001e18, "binomial out of range");
-        assertApproxEqRel(exact, oracle.getConversionRateLinearApprox(),   0.00005e18,       "linear out of range");
+        uint256 binomial = oracle.getConversionRateBinomialApprox();
+        uint256 linear = oracle.getConversionRateLinearApprox();
+
+        // Error bounds
+        assertApproxEqRel(exact, binomial, 0.00000000001e18, "binomial out of range");
+        assertApproxEqRel(exact, linear,   0.00005e18,       "linear out of range");
 
         // Binomial and then linear should always underestimate
-        assertGe(exact, oracle.getConversionRateBinomialApprox());
-        assertGe(exact, oracle.getConversionRateLinearApprox());
+        assertGe(exact, binomial);
+        assertGe(binomial, linear);
     }
 
 }
