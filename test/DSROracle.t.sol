@@ -179,9 +179,9 @@ contract DSROracleTest is Test {
 
         skip(duration);
 
-        uint256 exact = oracle.getConversionRate();
+        uint256 exact    = oracle.getConversionRate();
         uint256 binomial = oracle.getConversionRateBinomialApprox();
-        uint256 linear = oracle.getConversionRateLinearApprox();
+        uint256 linear   = oracle.getConversionRateLinearApprox();
 
         // Error bounds
         assertApproxEqRel(exact, binomial, 0.00000000001e18, "binomial out of range");
