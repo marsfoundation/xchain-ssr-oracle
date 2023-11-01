@@ -188,7 +188,7 @@ contract DSROracleTest is Test {
         assertApproxEqRel(exact, linear,   0.00005e18,       "linear out of range");
 
         // Binomial and then linear should always underestimate
-        assertGe(exact, binomial);
+        assertGe(exact,    binomial);
         assertGe(binomial, linear);
     }
 
