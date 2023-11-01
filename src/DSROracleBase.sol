@@ -58,7 +58,7 @@ abstract contract DSROracleBase is IDSROracle {
             rate = d.dsr - RAY;
         }
 
-        if (exp == 0 || rate == RAY) {
+        if (exp == 0) {
             return d.chi;
         }
 
