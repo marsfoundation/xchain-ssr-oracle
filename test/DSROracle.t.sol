@@ -45,14 +45,14 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRate() public {
-        assertEq(oracle.getConversionRate(), 1e27);
+        assertEq(oracle.getConversionRate(),         1e27);
         assertEq(oracle.getConversionRate(ONE_YEAR), 1e27);
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
-        assertEq(oracle.getConversionRate(), 1.03e27);
+        assertEq(oracle.getConversionRate(),         1.03e27);
         assertEq(oracle.getConversionRate(ONE_YEAR), 1.081499999999999999959902249e27);   // 5% interest on 1.03 value = 1.0815
     }
 
@@ -84,14 +84,14 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateBinomialApprox() public {
-        assertEq(oracle.getConversionRateBinomialApprox(), 1e27);
+        assertEq(oracle.getConversionRateBinomialApprox(),         1e27);
         assertEq(oracle.getConversionRateBinomialApprox(ONE_YEAR), 1e27);
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
-        assertEq(oracle.getConversionRateBinomialApprox(), 1.03e27);
+        assertEq(oracle.getConversionRateBinomialApprox(),         1.03e27);
         assertEq(oracle.getConversionRateBinomialApprox(ONE_YEAR), 1.081495968383924399665215760e27);   // 5% interest on 1.03 value = 1.0815
     }
 
@@ -123,14 +123,14 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateLinearApprox() public {
-        assertEq(oracle.getConversionRateLinearApprox(), 1e27);
+        assertEq(oracle.getConversionRateLinearApprox(),         1e27);
         assertEq(oracle.getConversionRateLinearApprox(ONE_YEAR), 1e27);
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
-        assertEq(oracle.getConversionRateLinearApprox(), 1.03e27);
+        assertEq(oracle.getConversionRateLinearApprox(),         1.03e27);
         assertEq(oracle.getConversionRateLinearApprox(ONE_YEAR), 1.080253869133389495792931840e27);   // 5% interest on 1.03 value = 1.0815, but linear approx is 1.0802
     }
 
