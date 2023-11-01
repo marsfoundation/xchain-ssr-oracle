@@ -8,9 +8,9 @@ pragma solidity >=0.8.0;
 interface IDSROracle {
 
     struct PotData {
-        uint96  dsr;    // Dai Savings Rate in per-second value [ray]
-        uint120 chi;    // Last computed conversion rate [ray]
-        uint40  rho;    // Last computed timestamp [seconds]
+        uint96  dsr;  // Dai Savings Rate in per-second value [ray]
+        uint120 chi;  // Last computed conversion rate [ray]
+        uint40  rho;  // Last computed timestamp [seconds]
     }
 
     /**
