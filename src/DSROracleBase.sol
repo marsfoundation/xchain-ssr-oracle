@@ -55,14 +55,14 @@ abstract contract DSROracleBase is IDSROracle {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
-        uint256 exp = timestamp - rho;
+        if (timestamp == rho) {
+            return d.chi;
+        }
+        uint256 exp;
         uint256 rate;
         unchecked {
+            exp = timestamp - rho;
             rate = d.dsr - RAY;
-        }
-
-        if (exp == 0) {
-            return d.chi;
         }
 
         uint256 expMinusOne;
