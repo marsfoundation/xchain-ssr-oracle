@@ -12,10 +12,16 @@ contract DSROracleTest is Test {
     uint256 constant FIVE_PCT_APY_DSR = 1.000000001547125957863212448e27;
     uint256 constant FIVE_PCT_APY_APR = 0.048790164207174267760128000e27;
 
+    uint256 ONE_YEAR;
+
     PotMock   pot;
     DSROracle oracle;
 
     function setUp() public {
+        skip(30 * (365 days));  // Skip 30 years to avoid underflow
+
+        ONE_YEAR = block.timestamp + 365 days;
+
         pot = new PotMock();
         oracle = new DSROracle(address(pot));
     }
@@ -39,15 +45,15 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRate() public {
-        assertEq(oracle.getConversionRate(), 1e27);
-        assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1e27);
+        assertEq(oracle.getConversionRate(),         1e27);
+        assertEq(oracle.getConversionRate(ONE_YEAR), 1e27);
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
-        assertEq(oracle.getConversionRate(), 1.03e27);
-        assertEq(oracle.getConversionRate(block.timestamp + 365 days), 1.081499999999999999959902249e27);   // 5% interest on 1.03 value = 1.0815
+        assertEq(oracle.getConversionRate(),         1.03e27);
+        assertEq(oracle.getConversionRate(ONE_YEAR), 1.081499999999999999959902249e27);   // 5% interest on 1.03 value = 1.0815
     }
 
     function test_gas_getConversionRate_1hour() public {
@@ -67,24 +73,26 @@ contract DSROracleTest is Test {
         oracle.refresh();
         vm.resumeGasMetering();
 
-        oracle.getConversionRate(block.timestamp + 365 days);
+        oracle.getConversionRate(ONE_YEAR);
     }
 
     function test_getConversionRate_pastRevert() public {
-        vm.expectRevert();
-        oracle.getConversionRate(block.timestamp - 365 days);
+        vm.expectRevert("DSROracleBase/invalid-timestamp");
+        oracle.getConversionRate(block.timestamp - 1);
+
+        oracle.getConversionRate(block.timestamp);
     }
 
     function test_getConversionRateBinomialApprox() public {
-        assertEq(oracle.getConversionRateBinomialApprox(), 1e27);
-        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1e27);
+        assertEq(oracle.getConversionRateBinomialApprox(),         1e27);
+        assertEq(oracle.getConversionRateBinomialApprox(ONE_YEAR), 1e27);
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
-        assertEq(oracle.getConversionRateBinomialApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateBinomialApprox(block.timestamp + 365 days), 1.081495968383924399665215760e27);   // 5% interest on 1.03 value = 1.0815
+        assertEq(oracle.getConversionRateBinomialApprox(),         1.03e27);
+        assertEq(oracle.getConversionRateBinomialApprox(ONE_YEAR), 1.081495968383924399665215760e27);   // 5% interest on 1.03 value = 1.0815
     }
 
     function test_gas_getConversionRateBinomialApprox_1hour() public {
@@ -104,24 +112,26 @@ contract DSROracleTest is Test {
         oracle.refresh();
         vm.resumeGasMetering();
 
-        oracle.getConversionRateBinomialApprox(block.timestamp + 365 days);
+        oracle.getConversionRateBinomialApprox(ONE_YEAR);
     }
 
     function test_getConversionRateBinomialApprox_pastRevert() public {
-        vm.expectRevert();
-        oracle.getConversionRateBinomialApprox(block.timestamp - 365 days);
+        vm.expectRevert("DSROracleBase/invalid-timestamp");
+        oracle.getConversionRateBinomialApprox(block.timestamp - 1);
+
+        oracle.getConversionRateBinomialApprox(block.timestamp);
     }
 
     function test_getConversionRateLinearApprox() public {
-        assertEq(oracle.getConversionRateLinearApprox(), 1e27);
-        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1e27);
+        assertEq(oracle.getConversionRateLinearApprox(),         1e27);
+        assertEq(oracle.getConversionRateLinearApprox(ONE_YEAR), 1e27);
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         oracle.refresh();
 
-        assertEq(oracle.getConversionRateLinearApprox(), 1.03e27);
-        assertEq(oracle.getConversionRateLinearApprox(block.timestamp + 365 days), 1.078790164207174267760128000e27);   // 5% interest on 1.03 value = 1.0815, but linear approx is 1.0788
+        assertEq(oracle.getConversionRateLinearApprox(),         1.03e27);
+        assertEq(oracle.getConversionRateLinearApprox(ONE_YEAR), 1.080253869133389495792931840e27);   // 5% interest on 1.03 value = 1.0815, but linear approx is 1.0802
     }
 
     function test_gas_getConversionRateLinearApprox_1hour() public {
@@ -141,12 +151,14 @@ contract DSROracleTest is Test {
         oracle.refresh();
         vm.resumeGasMetering();
 
-        oracle.getConversionRateLinearApprox(block.timestamp + 365 days);
+        oracle.getConversionRateLinearApprox(ONE_YEAR);
     }
 
     function test_getConversionRateLinearApprox_pastRevert() public {
-        vm.expectRevert();
-        oracle.getConversionRateLinearApprox(block.timestamp - 365 days);
+        vm.expectRevert("DSROracleBase/invalid-timestamp");
+        oracle.getConversionRateLinearApprox(block.timestamp - 1);
+
+        oracle.getConversionRateLinearApprox(block.timestamp);
     }
 
     function test_binomialAccuracyLongDuration() public {
@@ -156,14 +168,14 @@ contract DSROracleTest is Test {
 
         // Even after a year the binomial is accurate to within 0.001%
         assertApproxEqRel(
-            oracle.getConversionRate(block.timestamp + 365 days),
-            oracle.getConversionRateBinomialApprox(block.timestamp + 365 days),
+            oracle.getConversionRate(ONE_YEAR),
+            oracle.getConversionRateBinomialApprox(ONE_YEAR),
             0.00001e18
         );
     }
 
     function test_getConversionRateFuzz(uint256 rate, uint256 duration) public {
-        rate = bound(rate, 0, 1e27);            // Bound by 0-100% APR
+        rate     = bound(rate,     0, 1e27);    // Bound by 0-100% APR
         duration = bound(duration, 0, 1 days);  // Bound by 1 day
 
         pot.setDSR(rate / 365 days + 1e27);
@@ -171,14 +183,17 @@ contract DSROracleTest is Test {
 
         skip(duration);
 
+        uint256 exact    = oracle.getConversionRate();
+        uint256 binomial = oracle.getConversionRateBinomialApprox();
+        uint256 linear   = oracle.getConversionRateLinearApprox();
+
         // Error bounds
-        uint256 exact = oracle.getConversionRate();
-        assertApproxEqRel(exact, oracle.getConversionRateBinomialApprox(), 0.00000000001e18, "binomial out of range");
-        assertApproxEqRel(exact, oracle.getConversionRateLinearApprox(), 0.00005e18, "linear out of range");
+        assertApproxEqRel(exact, binomial, 0.00000000001e18, "binomial out of range");
+        assertApproxEqRel(exact, linear,   0.00005e18,       "linear out of range");
 
         // Binomial and then linear should always underestimate
-        assertGe(exact, oracle.getConversionRateBinomialApprox());
-        assertGe(oracle.getConversionRateBinomialApprox(), oracle.getConversionRateLinearApprox());
+        assertGe(exact,    binomial);
+        assertGe(binomial, linear);
     }
 
 }

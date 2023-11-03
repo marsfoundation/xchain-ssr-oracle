@@ -76,7 +76,10 @@ abstract contract DSROracleBase is IDSROracle {
     function getConversionRate(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
-        return (timestamp > rho) ? _rpow(d.dsr, timestamp - rho) * d.chi / RAY : d.chi;
+        if (timestamp == rho) return d.chi;
+        require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
+
+        return (timestamp > rho) ? _rpow(d.dsr, timestamp - rho) * uint256(d.chi) / RAY : d.chi;
     }
 
     function getConversionRateBinomialApprox() external view returns (uint256) {
@@ -86,14 +89,15 @@ abstract contract DSROracleBase is IDSROracle {
     // Copied and slightly modified from https://github.com/aave/aave-v3-core/blob/42103522764546a4eeb856b741214fa5532be52a/contracts/protocol/libraries/math/MathUtils.sol#L50
     function getConversionRateBinomialApprox(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
-        uint256 exp = timestamp - d.rho;
+        uint256 rho = d.rho;
+        if (timestamp == rho) return d.chi;
+        require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
+        
+        uint256 exp;
         uint256 rate;
         unchecked {
+            exp = timestamp - rho;
             rate = d.dsr - RAY;
-        }
-
-        if (exp == 0) {
-            return d.chi;
         }
 
         uint256 expMinusOne;
@@ -128,15 +132,16 @@ abstract contract DSROracleBase is IDSROracle {
     function getConversionRateLinearApprox(uint256 timestamp) public view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
-        if (timestamp > rho) {
-            uint256 rate;
-            unchecked {
-                rate = d.dsr - RAY;
-            }
-            return rate * (timestamp - rho) + d.chi;
-        } else {
-            return d.chi;
+        if (timestamp == rho) return d.chi;
+        require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
+        
+        uint256 duration;
+        uint256 rate;
+        unchecked {
+            duration = timestamp - rho;
+            rate = uint256(d.dsr) - RAY;
         }
+        return (rate * duration + RAY) * uint256(d.chi) / RAY;
     }
 
     // Copied from https://github.com/makerdao/sdai/blob/e6f8cfa1d638b1ef1c6187a1d18f73b21d2754a2/src/SavingsDai.sol#L118
