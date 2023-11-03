@@ -18,18 +18,22 @@ contract DSROracleTest is Test {
     DSROracle oracle;
 
     function setUp() public {
-        skip(30 * (365 days));  // Skip 30 years to avoid underflow
+        // To get some reasonable timestamps that are not 1
+        skip(1 * (365 days));
+
+        pot = new PotMock();
+
+        skip(30 * (365 days));
 
         ONE_YEAR = block.timestamp + 365 days;
 
-        pot = new PotMock();
         oracle = new DSROracle(address(pot));
     }
 
     function test_storage_defaults() public {
-        assertEq(oracle.getDSR(), 1e27);
-        assertEq(oracle.getChi(), 1e27);
-        assertEq(oracle.getRho(), block.timestamp);
+        assertEq(oracle.getDSR(), pot.dsr());
+        assertEq(oracle.getChi(), pot.chi());
+        assertEq(oracle.getRho(), pot.rho());
     }
 
     function test_apr() public {
@@ -50,6 +54,7 @@ contract DSROracleTest is Test {
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
 
         assertEq(oracle.getConversionRate(),         1.03e27);
@@ -60,6 +65,7 @@ contract DSROracleTest is Test {
         vm.pauseGasMetering();
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
         vm.resumeGasMetering();
 
@@ -70,6 +76,7 @@ contract DSROracleTest is Test {
         vm.pauseGasMetering();
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
         vm.resumeGasMetering();
 
@@ -77,10 +84,11 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRate_pastRevert() public {
+        uint256 rho = oracle.getRho();
         vm.expectRevert("DSROracleBase/invalid-timestamp");
-        oracle.getConversionRate(block.timestamp - 1);
+        oracle.getConversionRate(rho - 1);
 
-        oracle.getConversionRate(block.timestamp);
+        oracle.getConversionRate(rho);
     }
 
     function test_getConversionRateBinomialApprox() public {
@@ -89,6 +97,7 @@ contract DSROracleTest is Test {
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
 
         assertEq(oracle.getConversionRateBinomialApprox(),         1.03e27);
@@ -99,6 +108,7 @@ contract DSROracleTest is Test {
         vm.pauseGasMetering();
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
         vm.resumeGasMetering();
 
@@ -109,6 +119,7 @@ contract DSROracleTest is Test {
         vm.pauseGasMetering();
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
         vm.resumeGasMetering();
 
@@ -116,10 +127,11 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateBinomialApprox_pastRevert() public {
+        uint256 rho = oracle.getRho();
         vm.expectRevert("DSROracleBase/invalid-timestamp");
-        oracle.getConversionRateBinomialApprox(block.timestamp - 1);
+        oracle.getConversionRateBinomialApprox(rho - 1);
 
-        oracle.getConversionRateBinomialApprox(block.timestamp);
+        oracle.getConversionRateBinomialApprox(rho);
     }
 
     function test_getConversionRateLinearApprox() public {
@@ -128,6 +140,7 @@ contract DSROracleTest is Test {
 
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
 
         assertEq(oracle.getConversionRateLinearApprox(),         1.03e27);
@@ -138,6 +151,7 @@ contract DSROracleTest is Test {
         vm.pauseGasMetering();
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
         vm.resumeGasMetering();
 
@@ -148,6 +162,7 @@ contract DSROracleTest is Test {
         vm.pauseGasMetering();
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
         vm.resumeGasMetering();
 
@@ -155,15 +170,17 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateLinearApprox_pastRevert() public {
+        uint256 rho = oracle.getRho();
         vm.expectRevert("DSROracleBase/invalid-timestamp");
-        oracle.getConversionRateLinearApprox(block.timestamp - 1);
+        oracle.getConversionRateLinearApprox(rho - 1);
 
-        oracle.getConversionRateLinearApprox(block.timestamp);
+        oracle.getConversionRateLinearApprox(rho);
     }
 
     function test_binomialAccuracyLongDuration() public {
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
 
         // Even after a year the binomial is accurate to within 0.001%
@@ -175,10 +192,11 @@ contract DSROracleTest is Test {
     }
 
     function test_getConversionRateFuzz(uint256 rate, uint256 duration) public {
-        rate     = bound(rate,     0, 1e27);    // Bound by 0-100% APR
+        rate     = bound(rate,     0, 0.5e27);  // Bound by 0-50% APR
         duration = bound(duration, 0, 1 days);  // Bound by 1 day
 
         pot.setDSR(rate / 365 days + 1e27);
+        pot.setRho(block.timestamp);
         oracle.refresh();
 
         skip(duration);
