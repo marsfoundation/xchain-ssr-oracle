@@ -9,8 +9,9 @@ import { DSROracle } from "../src/DSROracle.sol";
 
 contract DSROracleTest is Test {
 
-    uint256 constant FIVE_PCT_APY_DSR = 1.000000001547125957863212448e27;
-    uint256 constant FIVE_PCT_APY_APR = 0.048790164207174267760128000e27;
+    uint256 constant FIVE_PCT_APY_DSR        = 1.000000001547125957863212448e27;
+    uint256 constant FIVE_PCT_APY_APR        = 0.048790164207174267760128000e27;
+    uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.00000002197955315123915302e27;
 
     uint256 ONE_YEAR;
 
@@ -23,7 +24,7 @@ contract DSROracleTest is Test {
 
         pot = new PotMock();
 
-        skip(30 * (365 days));
+        skip(1 * (365 days));
 
         ONE_YEAR = block.timestamp + 365 days;
 
@@ -34,6 +35,72 @@ contract DSROracleTest is Test {
         assertEq(oracle.getDSR(), pot.dsr());
         assertEq(oracle.getChi(), pot.chi());
         assertEq(oracle.getRho(), pot.rho());
+    }
+
+    function test_refresh() public {
+        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
+
+        oracle.refresh();
+
+        assertEq(oracle.getDSR(), FIVE_PCT_APY_DSR);
+        assertEq(oracle.getChi(), 1.03e27);
+        assertEq(oracle.getRho(), block.timestamp);
+    }
+
+    function test_refresh_rho_decreasing() public {
+        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setChi(1.03e27);
+        pot.setRho(oracle.getRho() - 1);
+
+        vm.expectRevert("DSROracleBase/invalid-rho");
+        oracle.refresh();
+    }
+
+    function test_refresh_rho_in_future() public {
+        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setChi(1.03e27);
+        pot.setRho(block.timestamp + 1);
+
+        vm.expectRevert("DSROracleBase/invalid-rho");
+        oracle.refresh();
+    }
+
+    function test_refresh_dsr_below_zero() public {
+        pot.setDSR(1e27 - 1);
+        pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
+
+        vm.expectRevert("DSROracleBase/invalid-dsr");
+        oracle.refresh();
+    }
+
+    function test_refresh_dsr_above_100pct() public {
+        pot.setDSR(ONE_HUNDRED_PCT_APY_DSR + 1);
+        pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
+
+        vm.expectRevert("DSROracleBase/invalid-dsr");
+        oracle.refresh();
+    }
+
+    function test_refresh_chi_decreasing() public {
+        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setChi(1e27 - 1);
+        pot.setRho(block.timestamp);
+
+        vm.expectRevert("DSROracleBase/invalid-chi");
+        oracle.refresh();
+    }
+
+    function test_refresh_chi_growth_too_fast() public {
+        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setChi(10e27);      // 10x return in 1 year is impossible below 100% APY
+        pot.setRho(block.timestamp);
+
+        vm.expectRevert("DSROracleBase/invalid-chi");
+        oracle.refresh();
     }
 
     function test_apr() public {
