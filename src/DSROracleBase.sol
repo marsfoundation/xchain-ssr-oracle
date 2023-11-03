@@ -11,14 +11,40 @@ abstract contract DSROracleBase is IDSROracle {
 
     uint256 private constant RAY = 1e27;
 
+    uint256 private constant MIN_DSR = RAY;                                    // 0%
+    uint256 private constant MAX_DSR = 1.00000002197955315123915302e27;        // 100%
+
     IDSROracle.PotData internal _data;
 
-    function _setPotData(IDSROracle.PotData memory data) internal {
+    function _setPotData(IDSROracle.PotData memory nextData) internal {
+        IDSROracle.PotData memory previousData = _data;
+        if (_data.rho == 0) {
+            // This is a first update
+            _data = nextData;
+            return;
+        }
+
+        // Perform sanity checks to minimize damage in the event of a bridge attack
+
         // Enforce non-decreasing values of rho in case of message reordering
         // The same timestamp is allowed as the other values will only change upon increasing rho
-        require(data.rho >= _data.rho, 'DSROracleBase/invalid-rho');
+        require(nextData.rho >= previousData.rho, 'DSROracleBase/invalid-rho');
 
-        _data = data;
+        // Timestamp must be in the past
+        require(nextData.rho <= block.timestamp, 'DSROracleBase/invalid-rho');
+
+        // DSR sanity bounds
+        require(nextData.dsr >= MIN_DSR, 'DSROracleBase/invalid-dsr');
+        require(nextData.dsr <= MAX_DSR, 'DSROracleBase/invalid-dsr');
+
+        // chi must be non-decreasing
+        require(nextData.chi >= previousData.chi, 'DSROracleBase/invalid-chi');
+
+        // Accumulation cannot be larger than the time elapsed at the MAX_DSR
+        uint256 chiMax = _rpow(MAX_DSR, nextData.rho - previousData.rho) * previousData.chi / RAY;
+        require(nextData.chi <= chiMax, 'DSROracleBase/invalid-chi');
+
+        _data = nextData;
     }
 
     function getPotData() external view returns (IDSROracle.PotData memory) {
