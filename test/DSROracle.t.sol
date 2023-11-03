@@ -5,9 +5,25 @@ import "forge-std/Test.sol";
 
 import { PotMock } from "./mocks/PotMock.sol";
 
-import { DSROracle } from "../src/DSROracle.sol";
+import { DSROracle, IDSROracle } from "../src/DSROracle.sol";
+
+contract DSROracleHarness is DSROracle {
+
+    constructor(address _pot) DSROracle(_pot) {}
+
+    function setPotData() public {
+        _setPotData(IDSROracle.PotData({
+            dsr: uint96(pot.dsr()),
+            chi: uint120(pot.chi()),
+            rho: uint40(pot.rho())
+        }));
+    }
+
+}
 
 contract DSROracleTest is Test {
+
+    event SetPotData(IDSROracle.PotData nextData);
 
     uint256 constant FIVE_PCT_APY_DSR        = 1.000000001547125957863212448e27;
     uint256 constant FIVE_PCT_APY_APR        = 0.048790164207174267760128000e27;
@@ -15,8 +31,8 @@ contract DSROracleTest is Test {
 
     uint256 ONE_YEAR;
 
-    PotMock   pot;
-    DSROracle oracle;
+    PotMock          pot;
+    DSROracleHarness oracle;
 
     function setUp() public {
         // To get some reasonable timestamps that are not 1
@@ -28,7 +44,7 @@ contract DSROracleTest is Test {
 
         ONE_YEAR = block.timestamp + 365 days;
 
-        oracle = new DSROracle(address(pot));
+        oracle = new DSROracleHarness(address(pot));
     }
 
     function test_storage_defaults() public {
@@ -42,6 +58,12 @@ contract DSROracleTest is Test {
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
 
+        vm.expectEmit();
+        emit SetPotData(IDSROracle.PotData({
+            dsr: uint96(FIVE_PCT_APY_DSR),
+            chi: uint120(1.03e27),
+            rho: uint40(block.timestamp)
+        }));
         oracle.refresh();
 
         assertEq(oracle.getDSR(), FIVE_PCT_APY_DSR);
@@ -49,58 +71,72 @@ contract DSROracleTest is Test {
         assertEq(oracle.getRho(), block.timestamp);
     }
 
-    function test_refresh_rho_decreasing() public {
+    function test_setPotData_emit_event() public {
+        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setChi(1.03e27);
+        pot.setRho(block.timestamp);
+
+        vm.expectEmit();
+        emit SetPotData(IDSROracle.PotData({
+            dsr: uint96(FIVE_PCT_APY_DSR),
+            chi: uint120(1.03e27),
+            rho: uint40(block.timestamp)
+        }));
+        oracle.setPotData();
+    }
+
+    function test_setPotData_rho_decreasing() public {
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         pot.setRho(oracle.getRho() - 1);
 
         vm.expectRevert("DSROracleBase/invalid-rho");
-        oracle.refresh();
+        oracle.setPotData();
     }
 
-    function test_refresh_rho_in_future() public {
+    function test_setPotData_rho_in_future() public {
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp + 1);
 
         vm.expectRevert("DSROracleBase/invalid-rho");
-        oracle.refresh();
+        oracle.setPotData();
     }
 
-    function test_refresh_dsr_below_zero() public {
+    function test_setPotData_dsr_below_zero() public {
         pot.setDSR(1e27 - 1);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
 
         vm.expectRevert("DSROracleBase/invalid-dsr");
-        oracle.refresh();
+        oracle.setPotData();
     }
 
-    function test_refresh_dsr_above_100pct() public {
+    function test_setPotData_dsr_above_100pct() public {
         pot.setDSR(ONE_HUNDRED_PCT_APY_DSR + 1);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
 
         vm.expectRevert("DSROracleBase/invalid-dsr");
-        oracle.refresh();
+        oracle.setPotData();
     }
 
-    function test_refresh_chi_decreasing() public {
+    function test_setPotData_chi_decreasing() public {
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(1e27 - 1);
         pot.setRho(block.timestamp);
 
         vm.expectRevert("DSROracleBase/invalid-chi");
-        oracle.refresh();
+        oracle.setPotData();
     }
 
-    function test_refresh_chi_growth_too_fast() public {
+    function test_setPotData_chi_growth_too_fast() public {
         pot.setDSR(FIVE_PCT_APY_DSR);
         pot.setChi(10e27);      // 10x return in 1 year is impossible below 100% APY
         pot.setRho(block.timestamp);
 
         vm.expectRevert("DSROracleBase/invalid-chi");
-        oracle.refresh();
+        oracle.setPotData();
     }
 
     function test_apr() public {

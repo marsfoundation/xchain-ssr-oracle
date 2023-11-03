@@ -24,11 +24,16 @@ contract DSROracle is DSROracleBase {
     *         `refresh()` should be called immediately whenever the `dsr` value changes.
     */
     function refresh() public {
-        _setPotData(IDSROracle.PotData({
+        IDSROracle.PotData memory nextData = IDSROracle.PotData({
             dsr: uint96(pot.dsr()),
             chi: uint120(pot.chi()),
             rho: uint40(pot.rho())
-        }));
+        });
+
+        // Don't set through _setPotData as we don't need to run sanity checks on the same network
+        _data = nextData;
+
+        emit SetPotData(nextData);
     }
 
 }

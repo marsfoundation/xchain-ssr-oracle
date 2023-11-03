@@ -45,6 +45,8 @@ abstract contract DSROracleBase is IDSROracle {
         require(nextData.chi <= chiMax, 'DSROracleBase/invalid-chi');
 
         _data = nextData;
+
+        emit SetPotData(nextData);
     }
 
     function getPotData() external view returns (IDSROracle.PotData memory) {
