@@ -5,28 +5,26 @@ import "forge-std/Test.sol";
 
 import { BridgedDomain, Domain } from "xchain-helpers/testing/BridgedDomain.sol";
 
-import { DSROracle, IPot } from "../src/DSROracle.sol";
+import { DSRMainnetOracle, IPot } from "../src/DSRMainnetOracle.sol";
 
 interface IPotDripLike {
     function drip() external;
 }
 
-contract DSROracleIntegrationTest is Test {
+contract DSRMainnetOracleIntegrationTest is Test {
 
-    address pot;
+    address pot = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
 
-    DSROracle oracle;
+    DSRMainnetOracle oracle;
 
     function setUp() public {
         vm.createSelectFork(getChain("mainnet").rpcUrl, 18_421_823);
-        
-        pot = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
 
         assertEq(IPot(pot).dsr(), 1.000000001547125957863212448e27);
         assertEq(IPot(pot).chi(), 1.039942074479136064327544607e27);
         assertEq(IPot(pot).rho(), 1698170603);
 
-        oracle = new DSROracle(address(pot));
+        oracle = new DSRMainnetOracle(address(pot));
     }
 
     function test_drip_update() public {

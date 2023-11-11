@@ -5,27 +5,30 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 
 import { GnosisDomain } from "xchain-helpers/testing/GnosisDomain.sol";
 
-import { DSROracleRelayerGnosis } from "../src/relayers/DSROracleRelayerGnosis.sol";
-import { DSROracleGnosis } from "../src/DSROracleGnosis.sol";
+import { DSROracleForwarderGnosis }  from "../src/forwarders/DSROracleForwarderGnosis.sol";
+import { DSROracleReceiverGnosis } from "../src/receivers/DSROracleReceiverGnosis.sol";
 
 contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
-    DSROracleRelayerGnosis relayer;
+    DSROracleForwarderGnosis forwarder;
+    DSROracleReceiverGnosis receiver;
 
     function setupDomain() internal override {
         remote = new GnosisDomain(getChain('gnosis_chain'), mainnet);
 
         mainnet.selectFork();
 
-        relayer = new DSROracleRelayerGnosis(address(pot), computeCreateAddress(address(this), 4));
+        forwarder = new DSROracleForwarderGnosis(address(pot), computeCreateAddress(address(this), 5));
 
         remote.selectFork();
 
-        oracle = new DSROracleGnosis(0x75Df5AF045d91108662D8080fD1FEFAd6aA0bb59, 1, address(relayer));
+        oracle = new DSRAuthOracle();
+        receiver = new DSROracleReceiverGnosis(0x75Df5AF045d91108662D8080fD1FEFAd6aA0bb59, 1, address(forwarder), oracle);
+        oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
     }
 
     function doRefresh() internal override {
-        relayer.refresh(500_000);
+        forwarder.refresh(500_000);
     }
 
 }

@@ -11,71 +11,41 @@ abstract contract DSROracleBase is IDSROracle {
 
     uint256 private constant RAY = 1e27;
 
-    uint256 private constant MIN_DSR = RAY;                                    // 0%
-    uint256 private constant MAX_DSR = 1.00000002197955315123915302e27;        // 100%
-
     IDSROracle.PotData internal _data;
 
     function _setPotData(IDSROracle.PotData memory nextData) internal {
-        IDSROracle.PotData memory previousData = _data;
-        if (_data.rho == 0) {
-            // This is a first update
-            _data = nextData;
-            return;
-        }
-
-        // Perform sanity checks to minimize damage in the event of a bridge attack
-
-        // Enforce non-decreasing values of rho in case of message reordering
-        // The same timestamp is allowed as the other values will only change upon increasing rho
-        require(nextData.rho >= previousData.rho, 'DSROracleBase/invalid-rho');
-
-        // Timestamp must be in the past
-        require(nextData.rho <= block.timestamp, 'DSROracleBase/invalid-rho');
-
-        // DSR sanity bounds
-        require(nextData.dsr >= MIN_DSR, 'DSROracleBase/invalid-dsr');
-        require(nextData.dsr <= MAX_DSR, 'DSROracleBase/invalid-dsr');
-
-        // chi must be non-decreasing
-        require(nextData.chi >= previousData.chi, 'DSROracleBase/invalid-chi');
-
-        // Accumulation cannot be larger than the time elapsed at the MAX_DSR
-        uint256 chiMax = _rpow(MAX_DSR, nextData.rho - previousData.rho) * previousData.chi / RAY;
-        require(nextData.chi <= chiMax, 'DSROracleBase/invalid-chi');
-
         _data = nextData;
 
         emit SetPotData(nextData);
     }
 
-    function getPotData() external view returns (IDSROracle.PotData memory) {
+    function getPotData() external override view returns (IDSROracle.PotData memory) {
         return _data;
     }
 
-    function getDSR() external view returns (uint256) {
+    function getDSR() external override view returns (uint256) {
         return _data.dsr;
     }
 
-    function getChi() external view returns (uint256) {
+    function getChi() external override view returns (uint256) {
         return _data.chi;
     }
 
-    function getRho() external view returns (uint256) {
+    function getRho() external override view returns (uint256) {
         return _data.rho;
     }
 
-    function getAPR() external view returns (uint256) {
+    function getAPR() external override view returns (uint256) {
         unchecked {
             return (_data.dsr - RAY) * 365 days;
         }
     }
 
-    function getConversionRate() external view returns (uint256) {
+    function getConversionRate() external override view returns (uint256) {
         return getConversionRate(block.timestamp);
     }
 
-    function getConversionRate(uint256 timestamp) public view returns (uint256) {
+    function getConversionRate(uint256 timestamp) public override view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
@@ -84,12 +54,12 @@ abstract contract DSROracleBase is IDSROracle {
         return (timestamp > rho) ? _rpow(d.dsr, timestamp - rho) * uint256(d.chi) / RAY : d.chi;
     }
 
-    function getConversionRateBinomialApprox() external view returns (uint256) {
+    function getConversionRateBinomialApprox() external override view returns (uint256) {
         return getConversionRateBinomialApprox(block.timestamp);
     }
 
     // Copied and slightly modified from https://github.com/aave/aave-v3-core/blob/42103522764546a4eeb856b741214fa5532be52a/contracts/protocol/libraries/math/MathUtils.sol#L50
-    function getConversionRateBinomialApprox(uint256 timestamp) public view returns (uint256) {
+    function getConversionRateBinomialApprox(uint256 timestamp) public override view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
@@ -127,11 +97,11 @@ abstract contract DSROracleBase is IDSROracle {
         return d.chi * (RAY + (rate * exp) + secondTerm + thirdTerm) / RAY;
     }
 
-    function getConversionRateLinearApprox() external view returns (uint256) {
+    function getConversionRateLinearApprox() external override view returns (uint256) {
         return getConversionRateLinearApprox(block.timestamp);
     }
 
-    function getConversionRateLinearApprox(uint256 timestamp) public view returns (uint256) {
+    function getConversionRateLinearApprox(uint256 timestamp) public override view returns (uint256) {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;

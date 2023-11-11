@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { IDSROracle, IDSROracleDataReceiver } from '../interfaces/IDSROracleDataReceiver.sol';
-import { IPot } from '../interfaces/IPot.sol';
+import { IDSRAuthOracle, IDSROracle } from '../interfaces/IDSRAuthOracle.sol';
+import { IPot }                       from '../interfaces/IPot.sol';
 
 /**
- * @title  DSROracleRelayerBase
+ * @title  DSROracleForwarderBase
  * @notice Base contract for relaying pot data messages cross-chain.
  */
-abstract contract DSROracleRelayerBase {
+abstract contract DSROracleForwarderBase {
 
     IPot    public immutable pot;
     address public immutable l2Oracle;
@@ -19,13 +19,13 @@ abstract contract DSROracleRelayerBase {
     }
 
     function _packMessage() internal view returns (bytes memory) {
-        return abi.encodeWithSelector(
-            IDSROracleDataReceiver.setPotData.selector,
-            IDSROracle.PotData({
+        return abi.encodeCall(
+            IDSRAuthOracle.setPotData,
+            (IDSROracle.PotData({
                 dsr: uint96(pot.dsr()),
                 chi: uint120(pot.chi()),
                 rho: uint40(pot.rho())
-            })
+            }))
         );
     }
 

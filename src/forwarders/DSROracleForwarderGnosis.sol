@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 import { XChainForwarders } from 'xchain-helpers/XChainForwarders.sol';
-import { DSROracleRelayerBase } from './DSROracleRelayerBase.sol';
+import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
 
-contract DSROracleRelayerGnosis is DSROracleRelayerBase {
+contract DSROracleForwarderGnosis is DSROracleForwarderBase {
 
-    constructor(address _pot, address _l2Oracle) DSROracleRelayerBase(_pot, _l2Oracle) {
+    constructor(address _pot, address _l2Oracle) DSROracleForwarderBase(_pot, _l2Oracle) {
         // Intentionally left blank
     }
 
