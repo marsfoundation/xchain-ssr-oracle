@@ -18,13 +18,16 @@ contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest 
 
         mainnet.selectFork();
 
-        forwarder = new DSROracleForwarderOptimism(address(pot), computeCreateAddress(address(this), 5));
+        address expectedReceiver = computeCreateAddress(address(this), 5);
+        forwarder = new DSROracleForwarderOptimism(address(pot), expectedReceiver);
 
         remote.selectFork();
 
         oracle = new DSRAuthOracle();
         receiver = new DSROracleReceiverOptimism(address(forwarder), oracle);
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
+
+        assertEq(address(receiver), expectedReceiver);
     }
 
     function doRefresh() internal override {
