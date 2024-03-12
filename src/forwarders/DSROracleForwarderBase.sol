@@ -10,23 +10,43 @@ import { IPot }                       from '../interfaces/IPot.sol';
  */
 abstract contract DSROracleForwarderBase {
 
-    IPot    public immutable pot;
-    address public immutable l2Oracle;
+    IPot               public immutable pot;
+    address            public immutable l2Oracle;
+    
+    IDSROracle.PotData public _lastSeenPotData;
 
     constructor(address _pot, address _l2Oracle) {
         pot      = IPot(_pot);
         l2Oracle = _l2Oracle;
     }
 
-    function _packMessage() internal view returns (bytes memory) {
+    function _packMessage() internal returns (bytes memory) {
+        IDSROracle.PotData memory potData = IDSROracle.PotData({
+            dsr: uint96(pot.dsr()),
+            chi: uint120(pot.chi()),
+            rho: uint40(pot.rho())
+        });
+        _lastSeenPotData = potData;
         return abi.encodeCall(
             IDSRAuthOracle.setPotData,
-            (IDSROracle.PotData({
-                dsr: uint96(pot.dsr()),
-                chi: uint120(pot.chi()),
-                rho: uint40(pot.rho())
-            }))
+            (potData)
         );
+    }
+
+    function getLastSeenPotData() external view returns (IDSROracle.PotData memory) {
+        return _lastSeenPotData;
+    }
+
+    function getLastSeenDSR() external view returns (uint256) {
+        return _lastSeenPotData.dsr;
+    }
+
+    function getLastSeenChi() external view returns (uint256) {
+        return _lastSeenPotData.chi;
+    }
+
+    function getLastSeenRho() external view returns (uint256) {
+        return _lastSeenPotData.rho;
     }
 
 }
