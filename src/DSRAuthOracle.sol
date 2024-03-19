@@ -51,10 +51,10 @@ contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
 
         // DSR sanity bounds
         uint256 _maxDSR = maxDSR;
-        require(nextData.dsr >= 1e27,   'DSRAuthOracle/invalid-dsr');
+        require(nextData.dsr >= 1e27,    'DSRAuthOracle/invalid-dsr');
         require(nextData.dsr <= _maxDSR, 'DSRAuthOracle/invalid-dsr');
 
-        // chi must be non-decreasing
+        // `chi` must be non-decreasing
         require(nextData.chi >= previousData.chi, 'DSRAuthOracle/invalid-chi');
 
         // Accumulation cannot be larger than the time elapsed at the max dsr
