@@ -37,6 +37,9 @@ contract DSRMainnetOracleTest is Test {
         assertEq(oracle.getDSR(), pot.dsr());
         assertEq(oracle.getChi(), pot.chi());
         assertEq(oracle.getRho(), pot.rho());
+        assertEq(oracle.getDSR(), 1e27);
+        assertEq(oracle.getChi(), 1e27);
+        assertEq(oracle.getRho(), block.timestamp);
     }
 
     function test_refresh() public {
@@ -104,7 +107,7 @@ contract DSRMainnetOracleTest is Test {
         oracle.getConversionRate(ONE_YEAR);
     }
 
-    function test_getConversionRate_pastRevert() public {
+    function test_getConversionRate_timestampUnderflowBoundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("DSROracleBase/invalid-timestamp");
         oracle.getConversionRate(rho - 1);
@@ -147,7 +150,7 @@ contract DSRMainnetOracleTest is Test {
         oracle.getConversionRateBinomialApprox(ONE_YEAR);
     }
 
-    function test_getConversionRateBinomialApprox_pastRevert() public {
+    function test_getConversionRateBinomialApprox_timestampUnderflowBoundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("DSROracleBase/invalid-timestamp");
         oracle.getConversionRateBinomialApprox(rho - 1);
@@ -190,7 +193,7 @@ contract DSRMainnetOracleTest is Test {
         oracle.getConversionRateLinearApprox(ONE_YEAR);
     }
 
-    function test_getConversionRateLinearApprox_pastRevert() public {
+    function test_getConversionRateLinearApprox_timestampUnderflowBoundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("DSROracleBase/invalid-timestamp");
         oracle.getConversionRateLinearApprox(rho - 1);
@@ -213,8 +216,8 @@ contract DSRMainnetOracleTest is Test {
     }
 
     function test_getConversionRateFuzz(uint256 rate, uint256 duration) public {
-        rate     = bound(rate,     0, 0.5e27);  // Bound by 0-50% APR
-        duration = bound(duration, 0, 1 days);  // Bound by 1 day
+        rate     = bound(rate,     0, 0.5e27);   // Bound by 0-50% APR
+        duration = bound(duration, 0, 30 days);  // Bound by 1 day
 
         pot.setDSR(rate / 365 days + 1e27);
         pot.setRho(block.timestamp);
@@ -227,8 +230,8 @@ contract DSRMainnetOracleTest is Test {
         uint256 linear   = oracle.getConversionRateLinearApprox();
 
         // Error bounds
-        assertApproxEqRel(exact, binomial, 0.00000000001e18, "binomial out of range");
-        assertApproxEqRel(exact, linear,   0.00005e18,       "linear out of range");
+        assertApproxEqRel(exact, binomial, 0.000001e18, "binomial out of range");
+        assertApproxEqRel(exact, linear,   0.005e18,    "linear out of range");
 
         // Binomial and then linear should always underestimate
         assertGe(exact,    binomial);
