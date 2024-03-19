@@ -13,35 +13,40 @@ interface IPotDripLike {
 
 contract DSRMainnetOracleIntegrationTest is Test {
 
+    uint256 constant CURR_DSR          = 1.000000001547125957863212448e27;
+    uint256 constant CURR_CHI          = 1.039942074479136064327544607e27;
+    uint256 constant CURR_CHI_COMPUTED = 1.039942923989970019616436906e27;
+    uint256 constant CURR_RHO          = 1698170603;
+
     address pot = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
 
     DSRMainnetOracle oracle;
 
     function setUp() public {
-        vm.createSelectFork(getChain("mainnet").rpcUrl, 18_421_823);
+        vm.createSelectFork(getChain("mainnet").rpcUrl, 18421823);
 
-        assertEq(IPot(pot).dsr(), 1.000000001547125957863212448e27);
-        assertEq(IPot(pot).chi(), 1.039942074479136064327544607e27);
-        assertEq(IPot(pot).rho(), 1698170603);
+        assertEq(IPot(pot).dsr(), CURR_DSR);
+        assertEq(IPot(pot).chi(), CURR_CHI);
+        assertEq(IPot(pot).rho(), CURR_RHO);
 
         oracle = new DSRMainnetOracle(address(pot));
     }
 
     function test_drip_update() public {
-        assertEq(oracle.getDSR(), 1.000000001547125957863212448e27);
-        assertEq(oracle.getChi(), 1.039942074479136064327544607e27);
-        assertEq(oracle.getRho(), 1698170603);
+        assertEq(oracle.getDSR(), CURR_DSR);
+        assertEq(oracle.getChi(), CURR_CHI);
+        assertEq(oracle.getRho(), CURR_RHO);
 
         IPotDripLike(pot).drip();
 
-        assertEq(IPot(pot).dsr(), 1.000000001547125957863212448e27);
-        assertGt(IPot(pot).chi(), 1.039942074479136064327544607e27);
+        assertEq(IPot(pot).dsr(), CURR_DSR);
+        assertGt(IPot(pot).chi(), CURR_CHI);
         assertEq(IPot(pot).rho(), block.timestamp);
         
         oracle.refresh();
 
-        assertEq(oracle.getDSR(), 1.000000001547125957863212448e27);
-        assertEq(oracle.getChi(), IPot(pot).chi());
+        assertEq(oracle.getDSR(), CURR_DSR);
+        assertEq(oracle.getChi(), CURR_CHI_COMPUTED);
         assertEq(oracle.getRho(), block.timestamp);
     }
 

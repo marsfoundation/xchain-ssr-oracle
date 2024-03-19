@@ -10,6 +10,8 @@ import { DSROracleReceiverGnosis } from "../src/receivers/DSROracleReceiverGnosi
 
 contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
+    address constant AMB = 0x75Df5AF045d91108662D8080fD1FEFAd6aA0bb59;
+
     DSROracleForwarderGnosis forwarder;
     DSROracleReceiverGnosis receiver;
 
@@ -23,7 +25,7 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
         remote.selectFork();
 
         oracle = new DSRAuthOracle();
-        receiver = new DSROracleReceiverGnosis(0x75Df5AF045d91108662D8080fD1FEFAd6aA0bb59, 1, address(forwarder), oracle);
+        receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
     }
 
