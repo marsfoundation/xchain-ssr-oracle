@@ -14,6 +14,10 @@ interface IPotDripLike {
 
 abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
+    uint256 constant CURR_DSR = 1.000000001547125957863212448e27;
+    uint256 constant CURR_CHI = 1.039942074479136064327544607e27;
+    uint256 constant CURR_RHO = 1698170603;
+
     Domain mainnet;
     BridgedDomain remote;
 
@@ -23,12 +27,12 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
     function setUp() public {
         mainnet = new Domain(getChain("mainnet"));
-        mainnet.rollFork(18_421_823);
+        mainnet.rollFork(18421823);
         mainnet.selectFork();
 
-        assertEq(IPot(pot).dsr(), 1.000000001547125957863212448e27);
-        assertEq(IPot(pot).chi(), 1.039942074479136064327544607e27);
-        assertEq(IPot(pot).rho(), 1698170603);
+        assertEq(IPot(pot).dsr(), CURR_DSR);
+        assertEq(IPot(pot).chi(), CURR_CHI);
+        assertEq(IPot(pot).rho(), CURR_RHO);
 
         setupDomain();
     }
@@ -49,9 +53,9 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
         remote.relayFromHost(true);
 
-        assertEq(oracle.getDSR(), 1.000000001547125957863212448e27);
-        assertEq(oracle.getChi(), 1.039942074479136064327544607e27);
-        assertEq(oracle.getRho(), 1698170603);
+        assertEq(oracle.getDSR(), CURR_DSR);
+        assertEq(oracle.getChi(), CURR_CHI);
+        assertEq(oracle.getRho(), CURR_RHO);
     }
 
 }
