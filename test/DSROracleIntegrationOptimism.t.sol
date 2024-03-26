@@ -5,8 +5,8 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 
 import { OptimismDomain } from "xchain-helpers/testing/OptimismDomain.sol";
 
-import { DSROracleForwarderOptimism }  from "../src/forwarders/DSROracleForwarderOptimism.sol";
-import { DSROracleReceiverOptimism } from "../src/receivers/DSROracleReceiverOptimism.sol";
+import { DSROracleForwarderOptimism } from "../src/forwarders/DSROracleForwarderOptimism.sol";
+import { DSROracleReceiverOptimism }  from "../src/receivers/DSROracleReceiverOptimism.sol";
 
 contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest {
 
