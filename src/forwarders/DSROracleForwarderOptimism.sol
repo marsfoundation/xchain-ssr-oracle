@@ -5,14 +5,14 @@ import { XChainForwarders } from 'xchain-helpers/XChainForwarders.sol';
 
 import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
 
-contract DSROracleForwarderGnosis is DSROracleForwarderBase {
+contract DSROracleForwarderOptimism is DSROracleForwarderBase {
 
     constructor(address _pot, address _l2Oracle) DSROracleForwarderBase(_pot, _l2Oracle) {
         // Intentionally left blank
     }
 
     function refresh(uint256 gasLimit) public {
-        XChainForwarders.sendMessageGnosis(
+        XChainForwarders.sendMessageOptimismMainnet(
             address(l2Oracle),
             _packMessage(),
             gasLimit

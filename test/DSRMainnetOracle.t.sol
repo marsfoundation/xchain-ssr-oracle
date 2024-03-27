@@ -39,7 +39,7 @@ contract DSRMainnetOracleTest is Test {
         assertEq(oracle.getRho(), pot.rho());
         assertEq(oracle.getDSR(), 1e27);
         assertEq(oracle.getChi(), 1e27);
-        assertEq(oracle.getRho(), block.timestamp);
+        assertEq(oracle.getRho(), block.timestamp - 365 days);
     }
 
     function test_refresh() public {

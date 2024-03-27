@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import { BridgedDomain, Domain } from "xchain-helpers/testing/BridgedDomain.sol";
-
 import { DSRMainnetOracle, IPot } from "../src/DSRMainnetOracle.sol";
 
 interface IPotLike is IPot {
