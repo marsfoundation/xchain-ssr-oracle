@@ -5,8 +5,9 @@ import "forge-std/Test.sol";
 
 import { BridgedDomain, Domain } from "xchain-helpers/testing/BridgedDomain.sol";
 
-import { DSRAuthOracle  } from "../src/DSRAuthOracle.sol";
-import { IPot }           from "../src/interfaces/IPot.sol";
+import { DSRAuthOracle  }                  from "../src/DSRAuthOracle.sol";
+import { DSRBalancerRateProviderAdapter  } from "../src/adapters/DSRBalancerRateProviderAdapter.sol";
+import { IPot }                            from "../src/interfaces/IPot.sol";
 
 interface IPotDripLike {
     function drip() external;
@@ -25,6 +26,9 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
     DSRAuthOracle oracle;
 
+    // Test various adapters
+    DSRBalancerRateProviderAdapter balancerAdapter;
+
     function setUp() public {
         mainnet = new Domain(getChain("mainnet"));
         mainnet.rollFork(18421823);
@@ -35,6 +39,10 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         assertEq(IPot(pot).rho(), CURR_RHO);
 
         setupDomain();
+
+        remote.selectFork();
+
+        balancerAdapter = new DSRBalancerRateProviderAdapter(oracle);
     }
 
     function setupDomain() internal virtual;
@@ -56,6 +64,10 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         assertEq(oracle.getDSR(), CURR_DSR);
         assertEq(oracle.getChi(), CURR_CHI);
         assertEq(oracle.getRho(), CURR_RHO);
+
+        // Anchor the time to the RHO so we can check the hard coded value
+        vm.warp(CURR_RHO + 30 days);
+        assertEq(balancerAdapter.getRate(), 1.044120769556671376e18);
     }
 
 }
