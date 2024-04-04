@@ -51,7 +51,11 @@ abstract contract DSROracleBase is IDSROracle {
         if (timestamp == rho) return d.chi;
         require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
 
-        return (timestamp > rho) ? _rpow(d.dsr, timestamp - rho) * uint256(d.chi) / RAY : d.chi;
+        uint256 duration;
+        unchecked {
+            duration = timestamp - rho;
+        }
+        return _rpow(d.dsr, duration) * uint256(d.chi) / RAY;
     }
 
     function getConversionRateBinomialApprox() external override view returns (uint256) {

@@ -12,6 +12,8 @@ import { IDSRAuthOracle }            from './interfaces/IDSRAuthOracle.sol';
  */
 contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
 
+    uint256 private constant RAY = 1e27;
+
     bytes32 public constant DATA_PROVIDER_ROLE = keccak256('DATA_PROVIDER_ROLE');
 
     uint256 public maxDSR;
@@ -20,11 +22,11 @@ contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(DATA_PROVIDER_ROLE, DEFAULT_ADMIN_ROLE);
 
-        maxDSR = 1e27;
+        maxDSR = RAY;
     }
 
     function setMaxDSR(uint256 _maxDSR) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(_maxDSR >= 1e27, 'DSRAuthOracle/invalid-max-dsr');
+        require(_maxDSR >= RAY, 'DSRAuthOracle/invalid-max-dsr');
 
         maxDSR = _maxDSR;
         emit SetMaxDSR(_maxDSR);
@@ -51,14 +53,14 @@ contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
 
         // DSR sanity bounds
         uint256 _maxDSR = maxDSR;
-        require(nextData.dsr >= 1e27,    'DSRAuthOracle/invalid-dsr');
+        require(nextData.dsr >= RAY,     'DSRAuthOracle/invalid-dsr');
         require(nextData.dsr <= _maxDSR, 'DSRAuthOracle/invalid-dsr');
 
         // `chi` must be non-decreasing
         require(nextData.chi >= previousData.chi, 'DSRAuthOracle/invalid-chi');
 
         // Accumulation cannot be larger than the time elapsed at the max dsr
-        uint256 chiMax = _rpow(_maxDSR, nextData.rho - previousData.rho) * previousData.chi / 1e27;
+        uint256 chiMax = _rpow(_maxDSR, nextData.rho - previousData.rho) * previousData.chi / RAY;
         require(nextData.chi <= chiMax, 'DSRAuthOracle/invalid-chi');
 
         _setPotData(nextData);
