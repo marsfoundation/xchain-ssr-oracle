@@ -13,7 +13,7 @@ abstract contract DSROracleForwarderBase {
     IPot               public immutable pot;
     address            public immutable l2Oracle;
     
-    IDSROracle.PotData public _lastSeenPotData;
+    IDSROracle.PotData private _lastSeenPotData;
 
     constructor(address _pot, address _l2Oracle) {
         pot      = IPot(_pot);
