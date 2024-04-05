@@ -1,52 +1,22 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { IDSRAuthOracle, IDSROracle } from '../interfaces/IDSRAuthOracle.sol';
-import { IPot }                       from '../interfaces/IPot.sol';
+import { XChainForwarders } from 'xchain-helpers/XChainForwarders.sol';
 
-/**
- * @title  DSROracleForwarderBase
- * @notice Base contract for relaying pot data messages cross-chain.
- */
-abstract contract DSROracleForwarderBase {
+import { DSROracleForwarder } from './DSROracleForwarder.sol';
 
-    IPot               public immutable pot;
-    address            public immutable l2Oracle;
-    
-    IDSROracle.PotData private _lastSeenPotData;
+contract DSROracleForwarderBase is DSROracleForwarder {
 
-    constructor(address _pot, address _l2Oracle) {
-        pot      = IPot(_pot);
-        l2Oracle = _l2Oracle;
+    constructor(address _pot, address _l2Oracle) DSROracleForwarder(_pot, _l2Oracle) {
+        // Intentionally left blank
     }
 
-    function _packMessage() internal returns (bytes memory) {
-        IDSROracle.PotData memory potData = IDSROracle.PotData({
-            dsr: uint96(pot.dsr()),
-            chi: uint120(pot.chi()),
-            rho: uint40(pot.rho())
-        });
-        _lastSeenPotData = potData;
-        return abi.encodeCall(
-            IDSRAuthOracle.setPotData,
-            (potData)
+    function refresh(uint256 gasLimit) public {
+        XChainForwarders.sendMessageBase(
+            address(l2Oracle),
+            _packMessage(),
+            gasLimit
         );
-    }
-
-    function getLastSeenPotData() external view returns (IDSROracle.PotData memory) {
-        return _lastSeenPotData;
-    }
-
-    function getLastSeenDSR() external view returns (uint256) {
-        return _lastSeenPotData.dsr;
-    }
-
-    function getLastSeenChi() external view returns (uint256) {
-        return _lastSeenPotData.chi;
-    }
-
-    function getLastSeenRho() external view returns (uint256) {
-        return _lastSeenPotData.rho;
     }
 
 }
