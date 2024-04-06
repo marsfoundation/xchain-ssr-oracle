@@ -26,9 +26,32 @@ These are bridge-specific messaging contracts. Forwarders permissionlessly relay
  * Base
  * Gnosis Chain
 
- ## Examples of Usage
+## Deployment Instructions
 
- Look in the integration tests for practical examples of what the deployment will look like.
+Foundry doesn't support multichain deployment scripts so this needs to be done via the `./deploy.sh` script.
+
+Usage: `./deploy.sh <REMOTE_NETWORK_NAME>[ --burn-access]`
+
+Where `<REMOTE_NETWORK_NAME>` is one of (optimism, base, gnosis). Be sure to have standard RPC endpoints defined in `XXX_RPC_URL` environment variables (ex. `OPTIMISM_RPC_URL`).
+
+Please be aware you should define the following environment variables for the script (Replace XXX with OPTIMISM, etc):
+
+Mainnet RPC URL: `MAINNET_RPC_URL`  
+Remote Chain RPC URL: `XXX_RPC_URL`  
+Deployer: `ETH_FROM`  
+Mainnet Etherscan API KEY: `ETHERSCAN_API_KEY`  
+Contract verification API KEY (Etherscan equivalent): `XXX_VERIFY_API_KEY`  
+
+After deployment, it is important to transfer the admin functionality of the `DSRAuthOracle` to either a trusted contract (IE Bridged Spark Goverance Admin) or to burn the access via `--burn-access` flag. You can also set the max dsr to a tigher bound.
+
+## Deployments
+
+### Optimism
+
+Forwarder: [0x4042127DecC0cF7cc0966791abebf7F76294DeF3](https://etherscan.io/address/0x4042127DecC0cF7cc0966791abebf7F76294DeF3#code)  
+AuthOracle: [0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64](https://optimistic.etherscan.io/address/0x33a3ab524a43e69f30bfd9ae97d1ec679ff00b64#code)  
+Receiver: [0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3](https://optimistic.etherscan.io/address/0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3#code)  
+Balancer Rate Provider: [0x15ACEE5F73b36762Ab1a6b7C98787b8148447898](https://optimistic.etherscan.io/address/0x15ACEE5F73b36762Ab1a6b7C98787b8148447898#code)  
 
 ***
 *The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
