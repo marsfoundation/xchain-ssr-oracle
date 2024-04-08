@@ -28,7 +28,7 @@ These are bridge-specific messaging contracts. Forwarders permissionlessly relay
 
 ## Deployment Instructions
 
-Foundry doesn't support multichain deployment scripts so this needs to be done via the `./deploy.sh` script.
+Deploy via the `./deploy.sh` script. This should be updated to a Foundry script at some point.
 
 Usage: `./deploy.sh <REMOTE_NETWORK_NAME>[ --burn-access]`
 
