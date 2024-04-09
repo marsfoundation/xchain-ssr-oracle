@@ -56,7 +56,7 @@ contract DSROracleConfigsBase is Test {
     }
 
     function _assertRatesInfo(IDSROracle.PotData memory lastSeenData) internal {
-        assertEq(_rpow(authOracleL2.maxDSR(), 365 days, 1e27), 10.999999999999999999542281371e27);  // ~1100%
+        assertEq(_rpow(authOracleL2.maxDSR(), 365 days, 1e27) - 1e27, 9.999999999999999999542281371e27);  // ~1000% APY
 
         IDSROracle.PotData memory l2Data = authOracleL2.getPotData();
 
