@@ -150,7 +150,7 @@ contract DSROracleConfigsBaseChain is DSROracleConfigsBase {
 
         IDSROracle.PotData memory lastSeenData = forwarderEthereum.getLastSeenPotData();
 
-        vm.createSelectFork("https://developer-access-mainnet.base.org", 12941086);  // April 9, 2024
+        vm.createSelectFork(getChain('base').rpcUrl, 12941086);  // April 9, 2024
 
         assertEq(address(receiverL2.l1Authority()),   address(forwarderEthereum));
         assertEq(address(receiverL2.l2CrossDomain()), address(Base.L2_MESSENGER));
