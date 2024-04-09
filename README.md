@@ -62,5 +62,3 @@ Balancer Rate Provider (Base): [0xeC0C14Ea7fF20F104496d960FDEBF5a0a0cC14D0](http
 
 ***
 *The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
-
-curl -H "content-type: application/json" -X POST --data '{"id":0,"jsonrpc":"2.0","method":"eth_getLogs","params":[{"address":"0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe","fromBlock":"earliest","toBlock":"12940734","topics":["0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"]}]}' https://base.blockscout.com/api/eth-rpc
