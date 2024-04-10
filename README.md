@@ -28,21 +28,7 @@ These are bridge-specific messaging contracts. Forwarders permissionlessly relay
 
 ## Deployment Instructions
 
-Deploy via the `./deploy.sh` script. This should be updated to a Foundry script at some point.
-
-Usage: `./deploy.sh <REMOTE_NETWORK_NAME>[ --burn-access]`
-
-Where `<REMOTE_NETWORK_NAME>` is one of (optimism, base, gnosis). Be sure to have standard RPC endpoints defined in `XXX_RPC_URL` environment variables (ex. `OPTIMISM_RPC_URL`).
-
-Please be aware you should define the following environment variables for the script (Replace XXX with OPTIMISM, etc):
-
-Mainnet RPC URL: `MAINNET_RPC_URL`  
-Remote Chain RPC URL: `XXX_RPC_URL`  
-Deployer: `ETH_FROM`  
-Mainnet Etherscan API KEY: `ETHERSCAN_API_KEY`  
-Contract verification API KEY (Etherscan equivalent): `XXX_VERIFY_API_KEY`  
-
-After deployment, it is important to transfer the admin functionality of the `DSRAuthOracle` to either a trusted contract (IE Bridged Spark Goverance Admin) or to burn the access via `--burn-access` flag. You can also set the max dsr to a tigher bound.
+Run `make deploy-XXX` where XXX is one of the supported networks. Be sure to have the `ETH_FROM` environment variable set to the deployer address as well as the relevant environment variables set for RPCs and contract verification. You can see contract verification api key names in `foundry.toml`.
 
 ## Deployments
 
