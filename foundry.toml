@@ -9,4 +9,10 @@ optimizer_runs = 100000
 [fuzz]
 runs = 10000
 
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}", chain = 1 }
+optimism = { key = "${OPTIMISMSCAN_API_KEY}", chain = 10 }
+base = { key = "${BASESCAN_API_KEY}", chain = 8453 }
+gnosis_chain = { key = "${GNOSISSCAN_API_KEY}", chain = 100, url = "https://api.gnosisscan.io/api" }
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
