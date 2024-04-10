@@ -7,3 +7,6 @@
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/sparklend-address-registry"]
+	path = lib/sparklend-address-registry
+	url = https://github.com/marsfoundation/sparklend-address-registry
