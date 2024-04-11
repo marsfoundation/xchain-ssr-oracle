@@ -9,12 +9,14 @@ import { IDSRAuthOracle }                 from "src/interfaces/IDSRAuthOracle.so
 import { DSRBalancerRateProviderAdapter } from "src/adapters/DSRBalancerRateProviderAdapter.sol";
 import { DSRAuthOracle }                  from "src/DSRAuthOracle.sol";
 
-import { DSROracleForwarderOptimism } from "src/forwarders/DSROracleForwarderOptimism.sol";
-import { DSROracleForwarderBase }     from "src/forwarders/DSROracleForwarderBase.sol";
-import { DSROracleForwarderGnosis }   from "src/forwarders/DSROracleForwarderGnosis.sol";
+import { DSROracleForwarderOptimism }    from "src/forwarders/DSROracleForwarderOptimism.sol";
+import { DSROracleForwarderBase }        from "src/forwarders/DSROracleForwarderBase.sol";
+import { DSROracleForwarderGnosis }      from "src/forwarders/DSROracleForwarderGnosis.sol";
+import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
 
 import { DSROracleReceiverOptimism } from "src/receivers/DSROracleReceiverOptimism.sol";
 import { DSROracleReceiverGnosis }   from "src/receivers/DSROracleReceiverGnosis.sol";
+import { DSROracleReceiverArbitrum } from "src/receivers/DSROracleReceiverArbitrum.sol";
 
 contract Deploy is Script {
 
@@ -114,6 +116,22 @@ contract DeployGnosis is Deploy {
 
     function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
         return address(new DSROracleReceiverGnosis(Gnosis.L2_AMB, 1, forwarder, oracle));
+    }
+
+}
+
+contract DeployArbitrumOne is Deploy {
+    
+    function run() external {
+        deploy(getChain("arbitrum_one").rpcUrl);
+    }
+
+    function deployForwarder(address receiver) internal override returns (address) {
+        return address(new DSROracleForwarderArbitrumOne(MCD_POT, receiver));
+    }
+
+    function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
+        return address(new DSROracleReceiverArbitrum(forwarder, oracle));
     }
 
 }
