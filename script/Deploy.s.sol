@@ -26,7 +26,7 @@ contract Deploy is Script {
 
     function deploy(string memory remoteRpcUrl) internal {
         address deployer = msg.sender;
-        address admin = vm.envOr("ORACLE_ADMIN", address(0));
+        address admin    = vm.envOr("ORACLE_ADMIN", address(0));
 
         vm.createSelectFork(remoteRpcUrl);
 
@@ -36,7 +36,7 @@ contract Deploy is Script {
 
         vm.startBroadcast();
         address expectedReceiver = vm.computeCreateAddress(deployer, nonce + 1);
-        address forwarder = deployForwarder(expectedReceiver);
+        address forwarder        = deployForwarder(expectedReceiver);
         vm.stopBroadcast();
 
         vm.createSelectFork(remoteRpcUrl);
@@ -56,9 +56,9 @@ contract Deploy is Script {
         oracle.renounceRole(oracle.DEFAULT_ADMIN_ROLE(), deployer);
         vm.stopBroadcast();
 
-        console.log("Deployed Forwarder at:", forwarder);
-        console.log("Deployed Receiver at:", receiver);
-        console.log("Deployed DSRAuthOracle at:", address(oracle));
+        console.log("Deployed Forwarder at:",                      forwarder);
+        console.log("Deployed Receiver at:",                       receiver);
+        console.log("Deployed DSRAuthOracle at:",                  address(oracle));
         console.log("Deployed DSRBalancerRateProviderAdapter at:", address(adapter));
     }
 
