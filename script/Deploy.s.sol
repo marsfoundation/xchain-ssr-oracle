@@ -56,9 +56,9 @@ contract Deploy is Script {
         oracle.renounceRole(oracle.DEFAULT_ADMIN_ROLE(), deployer);
         vm.stopBroadcast();
 
-        console.log("Deployed Forwarder at:",                      forwarder);
-        console.log("Deployed Receiver at:",                       receiver);
-        console.log("Deployed DSRAuthOracle at:",                  address(oracle));
+        console.log("Deployed Forwarder at:                     ", forwarder);
+        console.log("Deployed Receiver at:                      ", receiver);
+        console.log("Deployed DSRAuthOracle at:                 ", address(oracle));
         console.log("Deployed DSRBalancerRateProviderAdapter at:", address(adapter));
     }
 
