@@ -26,9 +26,25 @@ These are bridge-specific messaging contracts. Forwarders permissionlessly relay
  * Base
  * Gnosis Chain
 
- ## Examples of Usage
+## Deployment Instructions
 
- Look in the integration tests for practical examples of what the deployment will look like.
+Run `make deploy-XXX` where XXX is one of the supported networks. Be sure to have the `ETH_FROM` environment variable set to the deployer address as well as the relevant environment variables set for RPCs and contract verification. You can see contract verification api key names in `foundry.toml`.
+
+## Deployments
+
+### Optimism
+
+Forwarder (Ethereum): [0x4042127DecC0cF7cc0966791abebf7F76294DeF3](https://etherscan.io/address/0x4042127DecC0cF7cc0966791abebf7F76294DeF3#code)  
+AuthOracle (Optimism): [0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64](https://optimistic.etherscan.io/address/0x33a3ab524a43e69f30bfd9ae97d1ec679ff00b64#code)  
+Receiver (Optimism): [0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3](https://optimistic.etherscan.io/address/0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3#code)  
+Balancer Rate Provider (Optimism): [0x15ACEE5F73b36762Ab1a6b7C98787b8148447898](https://optimistic.etherscan.io/address/0x15ACEE5F73b36762Ab1a6b7C98787b8148447898#code)  
+
+### Base
+
+Forwarder (Ethereum): [0x8Ed551D485701fe489c215E13E42F6fc59563e0e](https://etherscan.io/address/0x8Ed551D485701fe489c215E13E42F6fc59563e0e#code)  
+AuthOracle (Base): [0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe](https://basescan.org/address/0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe#code)  
+Receiver (Base): [0xaDEAf02Ddb5Bed574045050B8096307bE66E0676](https://basescan.org/address/0xaDEAf02Ddb5Bed574045050B8096307bE66E0676#code)  
+Balancer Rate Provider (Base): [0xeC0C14Ea7fF20F104496d960FDEBF5a0a0cC14D0](https://basescan.org/address/0xeC0C14Ea7fF20F104496d960FDEBF5a0a0cC14D0#code)  
 
 ***
 *The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
