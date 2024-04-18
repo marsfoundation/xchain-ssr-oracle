@@ -22,8 +22,6 @@ contract Deploy is Script {
 
     address internal constant MCD_POT = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
 
-    uint256 internal constant DSR_1000APY = 1.000000076036763190083298291e27;
-
     function deploy(string memory remoteRpcUrl) internal {
         address deployer = msg.sender;
         address admin    = vm.envOr("ORACLE_ADMIN", address(0));
@@ -49,7 +47,6 @@ contract Deploy is Script {
 
         // Configure
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), receiver);
-        oracle.setMaxDSR(DSR_1000APY);
         if (admin != address(0)) {
             oracle.grantRole(oracle.DEFAULT_ADMIN_ROLE(), admin);
         }

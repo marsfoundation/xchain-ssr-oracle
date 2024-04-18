@@ -23,7 +23,6 @@ contract DSRAuthOracleTest is Test {
 
         // Feed initial data and set limits
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(this));
-        oracle.setMaxDSR(ONE_HUNDRED_PCT_APY_DSR);
         oracle.setPotData(IDSROracle.PotData({
             dsr: uint96(FIVE_PCT_APY_DSR),
             chi: uint120(1e27),
@@ -31,6 +30,10 @@ contract DSRAuthOracleTest is Test {
         }));
 
         skip(1 * (365 days));
+    }
+
+    function test_constructor() public {
+        assertEq(oracle.maxDSR(), 0);
     }
 
     function test_setPotData_rho_decreasing_boundary() public {
@@ -79,7 +82,9 @@ contract DSRAuthOracleTest is Test {
         }));
     }
 
-    function test_setPotData_dsr_above_100pct_boundary() public {
+    function test_setPotData_dsr_above_max_boundary() public {
+        oracle.setMaxDSR(ONE_HUNDRED_PCT_APY_DSR);
+
         vm.expectRevert("DSRAuthOracle/invalid-dsr");
         oracle.setPotData(IDSROracle.PotData({
             dsr: uint96(ONE_HUNDRED_PCT_APY_DSR + 1),
@@ -89,6 +94,15 @@ contract DSRAuthOracleTest is Test {
 
         oracle.setPotData(IDSROracle.PotData({
             dsr: uint96(ONE_HUNDRED_PCT_APY_DSR),
+            chi: uint120(1.03e27),
+            rho: uint40(block.timestamp)
+        }));
+    }
+
+    function test_setPotData_very_high_dsr_no_max() public {
+        // Set the DSR to be a very high number (Doubling every second)
+        oracle.setPotData(IDSROracle.PotData({
+            dsr: uint96(2e27),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
@@ -110,6 +124,8 @@ contract DSRAuthOracleTest is Test {
     }
 
     function test_setPotData_chi_growth_too_fast_boundary() public {
+        oracle.setMaxDSR(ONE_HUNDRED_PCT_APY_DSR);
+
         uint256 chiMax = _rpow(ONE_HUNDRED_PCT_APY_DSR, 365 days);
         assertEq(chiMax, 1.999999999999999999505617035e27);  // Max APY is 100% so ~2x return in 1 year is highest
 
@@ -123,6 +139,15 @@ contract DSRAuthOracleTest is Test {
         oracle.setPotData(IDSROracle.PotData({
             dsr: uint96(FIVE_PCT_APY_DSR),
             chi: uint120(chiMax),
+            rho: uint40(block.timestamp)
+        }));
+    }
+
+    function test_setPotData_chi_large_growth_no_max_dsr() public {
+        // A 100,000x return in 1 year is fine with no upper dsr limit
+        oracle.setPotData(IDSROracle.PotData({
+            dsr: uint96(FIVE_PCT_APY_DSR),
+            chi: uint120(100000e27),
             rho: uint40(block.timestamp)
         }));
     }
