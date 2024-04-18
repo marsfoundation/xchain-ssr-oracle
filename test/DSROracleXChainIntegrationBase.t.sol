@@ -8,7 +8,9 @@ import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 import { BridgedDomain, Domain } from "xchain-helpers/testing/BridgedDomain.sol";
 
 import { DSRAuthOracle  }                  from "../src/DSRAuthOracle.sol";
+import { DSROracleForwarder  }             from "../src/forwarders/DSROracleForwarder.sol";
 import { DSRBalancerRateProviderAdapter  } from "../src/adapters/DSRBalancerRateProviderAdapter.sol";
+import { IDSROracle }                      from "../src/interfaces/IDSROracle.sol";
 import { IPot }                            from "../src/interfaces/IPot.sol";
 
 interface IPotDripLike {
@@ -26,6 +28,8 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
     address pot  = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
     address sdai = 0x83F20F44975D03b1b09e64809B757c47f942BEeA;
+
+    DSROracleForwarder forwarder;
 
     DSRAuthOracle oracle;
 
@@ -66,7 +70,23 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         uint256 sdaiConversionRate = IERC4626(sdai).convertToAssets(1e18);
         assertEq(sdaiConversionRate, 1.044120771690352453e18);
 
+        IDSROracle.PotData memory data = forwarder.getLastSeenPotData();
+        assertEq(data.dsr,                   0);
+        assertEq(data.chi,                   0);
+        assertEq(data.rho,                   0);
+        assertEq(forwarder.getLastSeenDSR(), 0);
+        assertEq(forwarder.getLastSeenChi(), 0);
+        assertEq(forwarder.getLastSeenRho(), 0);
+
         doRefresh();
+
+        data = forwarder.getLastSeenPotData();
+        assertEq(data.dsr,                   CURR_DSR);
+        assertEq(data.chi,                   CURR_CHI);
+        assertEq(data.rho,                   CURR_RHO);
+        assertEq(forwarder.getLastSeenDSR(), CURR_DSR);
+        assertEq(forwarder.getLastSeenChi(), CURR_CHI);
+        assertEq(forwarder.getLastSeenRho(), CURR_RHO);
 
         remote.relayFromHost(true);
         vm.warp(CURR_RHO + 30 days);

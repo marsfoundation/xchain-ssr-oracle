@@ -10,9 +10,6 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 
 contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest {
 
-    DSROracleForwarderOptimism forwarder;
-    DSROracleReceiverOptimism  receiver;
-
     function setupDomain() internal override {
         remote = new OptimismDomain(getChain('optimism'), mainnet);
 
@@ -23,8 +20,8 @@ contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest 
 
         remote.selectFork();
 
-        oracle   = new DSRAuthOracle();
-        receiver = new DSROracleReceiverOptimism(address(forwarder), oracle);
+        oracle = new DSRAuthOracle();
+        DSROracleReceiverOptimism receiver = new DSROracleReceiverOptimism(address(forwarder), oracle);
         
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
 
@@ -32,7 +29,7 @@ contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest 
     }
 
     function doRefresh() internal override {
-        forwarder.refresh(500_000);
+        DSROracleForwarderOptimism(address(forwarder)).refresh(500_000);
     }
 
 }

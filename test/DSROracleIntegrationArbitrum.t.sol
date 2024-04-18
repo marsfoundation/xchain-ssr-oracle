@@ -10,9 +10,6 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 
 contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest {
 
-    DSROracleForwarderArbitrumOne forwarder;
-    DSROracleReceiverArbitrum     receiver;
-
     function setupDomain() internal override {
         remote = new ArbitrumDomain(getChain('arbitrum_one'), mainnet);
 
@@ -23,8 +20,8 @@ contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest 
 
         remote.selectFork();
 
-        oracle   = new DSRAuthOracle();
-        receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
+        oracle = new DSRAuthOracle();
+        DSROracleReceiverArbitrum receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
         
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
 
@@ -32,7 +29,7 @@ contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest 
     }
 
     function doRefresh() internal override {
-        forwarder.refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
+        DSROracleForwarderArbitrumOne(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
     }
 
 }
