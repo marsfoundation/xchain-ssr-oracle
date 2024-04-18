@@ -10,7 +10,7 @@ import { DSRBalancerRateProviderAdapter } from "src/adapters/DSRBalancerRateProv
 import { DSRAuthOracle }                  from "src/DSRAuthOracle.sol";
 
 import { DSROracleForwarderOptimism }    from "src/forwarders/DSROracleForwarderOptimism.sol";
-import { DSROracleForwarderBase }        from "src/forwarders/DSROracleForwarderBase.sol";
+import { DSROracleForwarderBaseChain }   from "src/forwarders/DSROracleForwarderBaseChain.sol";
 import { DSROracleForwarderGnosis }      from "src/forwarders/DSROracleForwarderGnosis.sol";
 import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
 
@@ -95,7 +95,7 @@ contract DeployBase is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new DSROracleForwarderBase(MCD_POT, receiver));
+        return address(new DSROracleForwarderBaseChain(MCD_POT, receiver));
     }
 
     function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
