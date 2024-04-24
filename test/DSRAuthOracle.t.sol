@@ -56,7 +56,7 @@ contract DSRAuthOracleTest is Test {
         assertEq(oracle.maxDSR(), 0);
     }
 
-    function setMaxDSR_ray_boundary() public {
+    function test_setMaxDSR_ray_boundary() public {
         vm.expectRevert("DSRAuthOracle/invalid-max-dsr");
         oracle.setMaxDSR(RAY - 1);
 

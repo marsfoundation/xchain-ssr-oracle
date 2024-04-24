@@ -10,9 +10,6 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 
 contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest {
 
-    DSROracleForwarderArbitrumOne forwarder;
-    DSROracleReceiverArbitrum     receiver;
-
     function setupDomain() internal override {
         remote = new ArbitrumDomain(getChain('arbitrum_one'), mainnet);
 
@@ -23,16 +20,30 @@ contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest 
 
         remote.selectFork();
 
-        oracle   = new DSRAuthOracle();
-        receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
+        oracle = new DSRAuthOracle();
+        DSROracleReceiverArbitrum receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
         
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
 
         assertEq(address(receiver), expectedReceiver);
     }
 
+    function test_constructor_forwarder() public {
+        DSROracleForwarderArbitrumOne forwarder = new DSROracleForwarderArbitrumOne(address(pot), makeAddr("receiver"));
+
+        assertEq(address(forwarder.pot()), address(pot));
+        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
+    }
+
+    function test_constructor_receiver() public {
+        DSROracleReceiverArbitrum receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
+
+        assertEq(address(receiver.oracle()), address(oracle));
+        assertEq(receiver.l1Authority(),     address(forwarder));
+    }
+
     function doRefresh() internal override {
-        forwarder.refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
+        DSROracleForwarderArbitrumOne(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
     }
 
 }

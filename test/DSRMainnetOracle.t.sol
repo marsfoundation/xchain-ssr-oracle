@@ -34,12 +34,17 @@ contract DSRMainnetOracleTest is Test {
     }
 
     function test_storage_defaults() public {
+        IDSROracle.PotData memory data = oracle.getPotData();
+
         assertEq(oracle.getDSR(), pot.dsr());
         assertEq(oracle.getChi(), pot.chi());
         assertEq(oracle.getRho(), pot.rho());
         assertEq(oracle.getDSR(), 1e27);
         assertEq(oracle.getChi(), 1e27);
         assertEq(oracle.getRho(), block.timestamp - 365 days);
+        assertEq(data.dsr,        1e27);
+        assertEq(data.chi,        1e27);
+        assertEq(data.rho,        block.timestamp - 365 days);
     }
 
     function test_refresh() public {
@@ -55,9 +60,14 @@ contract DSRMainnetOracleTest is Test {
         }));
         oracle.refresh();
 
+        IDSROracle.PotData memory data = oracle.getPotData();
+
         assertEq(oracle.getDSR(), FIVE_PCT_APY_DSR);
         assertEq(oracle.getChi(), 1.03e27);
         assertEq(oracle.getRho(), block.timestamp);
+        assertEq(data.dsr,        FIVE_PCT_APY_DSR);
+        assertEq(data.chi,        1.03e27);
+        assertEq(data.rho,        block.timestamp);
     }
 
     function test_apr() public {
