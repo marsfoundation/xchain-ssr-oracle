@@ -27,6 +27,13 @@ contract DSROracleIntegrationBaseTest is DSROracleXChainIntegrationBaseTest {
         assertEq(address(receiver), expectedReceiver);
     }
 
+    function test_constructor_forwarder() public {
+        DSROracleForwarderBaseChain forwarder = new DSROracleForwarderBaseChain(address(pot), makeAddr("receiver"));
+
+        assertEq(address(forwarder.pot()), address(pot));
+        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
+    }
+
     function doRefresh() internal override {
         DSROracleForwarderBaseChain(address(forwarder)).refresh(500_000);
     }

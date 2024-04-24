@@ -26,8 +26,15 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
     }
+
+    function test_constructor_forwarder() public {
+        DSROracleForwarderGnosis forwarder = new DSROracleForwarderGnosis(address(pot), makeAddr("receiver"));
+
+        assertEq(address(forwarder.pot()), address(pot));
+        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
+    }
     
-    function test_constructor() public {
+    function test_constructor_receiver() public {
         DSROracleReceiverGnosis receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
 
         assertEq(address(receiver.oracle()),        address(oracle));
