@@ -12,9 +12,6 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
     address constant AMB = 0x75Df5AF045d91108662D8080fD1FEFAd6aA0bb59;
 
-    DSROracleForwarderGnosis forwarder;
-    DSROracleReceiverGnosis  receiver;
-
     function setupDomain() internal override {
         remote = new GnosisDomain(getChain('gnosis_chain'), mainnet);
 
@@ -24,14 +21,30 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
         remote.selectFork();
 
-        oracle   = new DSRAuthOracle();
-        receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
+        oracle = new DSRAuthOracle();
+        DSROracleReceiverGnosis receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
     }
 
+    function test_constructor_forwarder() public {
+        DSROracleForwarderGnosis forwarder = new DSROracleForwarderGnosis(address(pot), makeAddr("receiver"));
+
+        assertEq(address(forwarder.pot()), address(pot));
+        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
+    }
+    
+    function test_constructor_receiver() public {
+        DSROracleReceiverGnosis receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
+
+        assertEq(address(receiver.oracle()),        address(oracle));
+        assertEq(address(receiver.l2CrossDomain()), address(AMB));
+        assertEq(receiver.chainId(),                bytes32(uint256(1)));
+        assertEq(receiver.l1Authority(),            address(forwarder));
+    }
+
     function doRefresh() internal override {
-        forwarder.refresh(500_000);
+        DSROracleForwarderGnosis(address(forwarder)).refresh(500_000);
     }
 
 }

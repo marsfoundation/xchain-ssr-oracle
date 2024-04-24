@@ -33,6 +33,13 @@ contract DSRAuthOracleTest is Test {
         skip(1 * (365 days));
     }
 
+    function test_setMaxDSR_boundary() public {
+        vm.expectRevert("DSRAuthOracle/invalid-max-dsr");
+        oracle.setMaxDSR(RAY - 1);
+
+        oracle.setMaxDSR(RAY);
+    }
+
     function test_setPotData_rho_decreasing_boundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("DSRAuthOracle/invalid-rho");
