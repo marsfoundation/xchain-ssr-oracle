@@ -5,12 +5,12 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 
 import { OptimismDomain } from "xchain-helpers/testing/OptimismDomain.sol";
 
-import { DSROracleForwarderBase } from "../src/forwarders/DSROracleForwarderBase.sol";
+import { DSROracleForwarderBaseChain } from "../src/forwarders/DSROracleForwarderBaseChain.sol";
 import { DSROracleReceiverOptimism }  from "../src/receivers/DSROracleReceiverOptimism.sol";
 
 contract DSROracleIntegrationBaseTest is DSROracleXChainIntegrationBaseTest {
 
-    DSROracleForwarderBase forwarder;
+    DSROracleForwarderBaseChain forwarder;
     DSROracleReceiverOptimism receiver;
 
     function setupDomain() internal override {
@@ -19,7 +19,7 @@ contract DSROracleIntegrationBaseTest is DSROracleXChainIntegrationBaseTest {
         mainnet.selectFork();
 
         address expectedReceiver = vm.computeCreateAddress(address(this), 5);
-        forwarder = new DSROracleForwarderBase(address(pot), expectedReceiver);
+        forwarder = new DSROracleForwarderBaseChain(address(pot), expectedReceiver);
 
         remote.selectFork();
 
