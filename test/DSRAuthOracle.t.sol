@@ -7,7 +7,7 @@ import { DSRAuthOracle, IDSROracle } from "../src/DSRAuthOracle.sol";
 
 contract DSRAuthOracleTest is Test {
 
-    event SetPotData(IDSROracle.PotData nextData);
+    event SetMaxDSR(uint256 maxDSR);
 
     uint256 constant FIVE_PCT_APY_DSR        = 1.000000001547125957863212448e27;
     uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.00000002197955315123915302e27;
@@ -34,6 +34,31 @@ contract DSRAuthOracleTest is Test {
 
     function test_constructor() public {
         assertEq(oracle.maxDSR(), 0);
+    }
+
+    function test_setMaxDSR_notAdmin() public {
+        address randomAddress = makeAddr("randomAddress");
+
+        vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", randomAddress, oracle.DEFAULT_ADMIN_ROLE()));
+        vm.prank(randomAddress);
+        oracle.setMaxDSR(ONE_HUNDRED_PCT_APY_DSR);
+    }
+
+    function test_setMaxDSR_setToZero() public {
+        oracle.setMaxDSR(ONE_HUNDRED_PCT_APY_DSR);
+
+        assertEq(oracle.maxDSR(), ONE_HUNDRED_PCT_APY_DSR);
+
+        oracle.setMaxDSR(0);
+
+        assertEq(oracle.maxDSR(), 0);
+    }
+
+    function setMaxDSR_ray_boundary() public {
+        vm.expectRevert("DSRAuthOracle/invalid-max-dsr");
+        oracle.setMaxDSR(RAY - 1);
+
+        oracle.setMaxDSR(RAY);
     }
 
     function test_setPotData_rho_decreasing_boundary() public {
