@@ -28,6 +28,13 @@ contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest 
         assertEq(address(receiver), expectedReceiver);
     }
 
+    function test_constructor() public {
+        DSROracleReceiverArbitrum receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
+
+        assertEq(address(receiver.oracle()), address(oracle));
+        assertEq(receiver.l1Authority(),     address(forwarder));
+    }
+
     function doRefresh() internal override {
         DSROracleForwarderArbitrumOne(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
     }

@@ -26,6 +26,15 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
     }
+    
+    function test_constructor() public {
+        DSROracleReceiverGnosis receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
+
+        assertEq(address(receiver.oracle()),        address(oracle));
+        assertEq(address(receiver.l2CrossDomain()), address(AMB));
+        assertEq(receiver.chainId(),                bytes32(uint256(1)));
+        assertEq(receiver.l1Authority(),            address(forwarder));
+    }
 
     function doRefresh() internal override {
         DSROracleForwarderGnosis(address(forwarder)).refresh(500_000);

@@ -28,6 +28,13 @@ contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest 
         assertEq(address(receiver), expectedReceiver);
     }
 
+    function test_constructor() public {
+        DSROracleReceiverOptimism receiver = new DSROracleReceiverOptimism(address(forwarder), oracle);
+
+        assertEq(address(receiver.oracle()), address(oracle));
+        assertEq(receiver.l1Authority(),     address(forwarder));
+    }
+
     function doRefresh() internal override {
         DSROracleForwarderOptimism(address(forwarder)).refresh(500_000);
     }
