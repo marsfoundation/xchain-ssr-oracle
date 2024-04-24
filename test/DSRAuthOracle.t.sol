@@ -49,6 +49,8 @@ contract DSRAuthOracleTest is Test {
 
         assertEq(oracle.maxDSR(), ONE_HUNDRED_PCT_APY_DSR);
 
+        vm.expectEmit(address(oracle));
+        emit SetMaxDSR(0);
         oracle.setMaxDSR(0);
 
         assertEq(oracle.maxDSR(), 0);
@@ -58,6 +60,8 @@ contract DSRAuthOracleTest is Test {
         vm.expectRevert("DSRAuthOracle/invalid-max-dsr");
         oracle.setMaxDSR(RAY - 1);
 
+        vm.expectEmit(address(oracle));
+        emit SetMaxDSR(RAY);
         oracle.setMaxDSR(RAY);
     }
 
