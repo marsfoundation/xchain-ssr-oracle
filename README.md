@@ -46,5 +46,12 @@ AuthOracle (Base): [0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe](https://basescan
 Receiver (Base): [0xaDEAf02Ddb5Bed574045050B8096307bE66E0676](https://basescan.org/address/0xaDEAf02Ddb5Bed574045050B8096307bE66E0676#code)  
 Balancer Rate Provider (Base): [0xeC0C14Ea7fF20F104496d960FDEBF5a0a0cC14D0](https://basescan.org/address/0xeC0C14Ea7fF20F104496d960FDEBF5a0a0cC14D0#code)  
 
+### Arbitrum
+
+Forwarder (Ethereum): [0x7F36E7F562Ee3f320644F6031e03E12a02B85799](https://etherscan.io/address/0x7F36E7F562Ee3f320644F6031e03E12a02B85799#code)  
+AuthOracle (Arbitrum): [0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3](https://arbiscan.io/address/0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3#code)  
+Receiver (Arbitrum): [0xcA61540eC2AC74E6954FA558B4aF836d95eCb91b](https://arbiscan.io/address/0xcA61540eC2AC74E6954FA558B4aF836d95eCb91b#code)  
+Balancer Rate Provider (Arbitrum): [0x73750DbD85753074e452B2C27fB9e3B0E75Ff3B8](https://arbiscan.io/address/0x73750DbD85753074e452B2C27fB9e3B0E75Ff3B8#code)  
+
 ***
 *The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
