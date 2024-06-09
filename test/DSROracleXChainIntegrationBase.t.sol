@@ -5,7 +5,8 @@ import "forge-std/Test.sol";
 
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { BridgedDomain, Domain } from "xchain-helpers/testing/BridgedDomain.sol";
+import { Bridge }                from "xchain-helpers/testing/Bridge.sol";
+import { Domain, DomainHelpers } from "xchain-helpers/testing/Domain.sol";
 
 import { DSRAuthOracle  }                  from "../src/DSRAuthOracle.sol";
 import { DSROracleForwarderBase  }         from "../src/forwarders/DSROracleForwarderBase.sol";
@@ -19,12 +20,15 @@ interface IPotDripLike {
 
 abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
+    using DomainHelpers for *;
+
     uint256 constant CURR_DSR = 1.000000001547125957863212448e27;
     uint256 constant CURR_CHI = 1.039942074479136064327544607e27;
     uint256 constant CURR_RHO = 1698170603;
 
     Domain mainnet;
-    BridgedDomain remote;
+    Domain remote;
+    Bridge bridge;
 
     address pot  = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
     address sdai = 0x83F20F44975D03b1b09e64809B757c47f942BEeA;
@@ -37,9 +41,7 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
     DSRBalancerRateProviderAdapter balancerAdapter;
 
     function setUp() public {
-        mainnet = new Domain(getChain("mainnet"));
-        mainnet.rollFork(18421823);
-        mainnet.selectFork();
+        mainnet = getChain("mainnet").createSelectFork(18421823);  // Oct 24, 2023
 
         assertEq(IPot(pot).dsr(), CURR_DSR);
         assertEq(IPot(pot).chi(), CURR_CHI);
@@ -54,6 +56,7 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
     function setupDomain() internal virtual;
     function doRefresh() internal virtual;
+    function relayMessagesAcrossBridge() internal virtual;
 
     function test_xchain_relay() public {
         remote.selectFork();
@@ -88,7 +91,7 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         assertEq(forwarder.getLastSeenChi(), CURR_CHI);
         assertEq(forwarder.getLastSeenRho(), CURR_RHO);
 
-        remote.relayFromHost(true);
+        relayMessagesAcrossBridge();
         vm.warp(CURR_RHO + 30 days);
 
         assertEq(oracle.getDSR(), CURR_DSR);

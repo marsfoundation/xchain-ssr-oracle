@@ -1,28 +1,35 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { GnosisDomain } from "xchain-helpers/testing/GnosisDomain.sol";
+import "./DSROracleXChainIntegrationBase.t.sol";
+
+import { AMBBridgeTesting } from "xchain-helpers/testing/bridges/AMBBridgeTesting.sol";
+import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
 
 import { DSROracleForwarderGnosis } from "src/forwarders/DSROracleForwarderGnosis.sol";
-import { DSROracleReceiverGnosis }  from "src/receivers/DSROracleReceiverGnosis.sol";
-
-import "./DSROracleXChainIntegrationBase.t.sol";
 
 contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
-    address constant AMB = 0x75Df5AF045d91108662D8080fD1FEFAd6aA0bb59;
+    using DomainHelpers    for *;
+    using AMBBridgeTesting for *;
 
     function setupDomain() internal override {
-        remote = new GnosisDomain(getChain('gnosis_chain'), mainnet);
+        remote = getChain('gnosis_chain').createFork();
+        bridge = AMBBridgeTesting.createGnosisBridge(mainnet, remote);
 
         mainnet.selectFork();
 
-        forwarder = new DSROracleForwarderGnosis(address(pot), vm.computeCreateAddress(address(this), 5));
+        forwarder = new DSROracleForwarderGnosis(address(pot), vm.computeCreateAddress(address(this), 3));
 
         remote.selectFork();
 
         oracle = new DSRAuthOracle();
-        DSROracleReceiverGnosis receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
+        AMBReceiver receiver = new AMBReceiver(
+            AMBBridgeTesting.getGnosisMessengerFromChainAlias(bridge.destination.chain.chainAlias),
+            bytes32(uint256(1)),  // Ethereum chainid
+            address(forwarder),
+            address(oracle)
+        );
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
     }
@@ -33,18 +40,13 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
         assertEq(address(forwarder.pot()), address(pot));
         assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
     }
-    
-    function test_constructor_receiver() public {
-        DSROracleReceiverGnosis receiver = new DSROracleReceiverGnosis(AMB, 1, address(forwarder), oracle);
-
-        assertEq(address(receiver.oracle()),        address(oracle));
-        assertEq(address(receiver.l2CrossDomain()), address(AMB));
-        assertEq(receiver.chainId(),                bytes32(uint256(1)));
-        assertEq(receiver.l1Authority(),            address(forwarder));
-    }
 
     function doRefresh() internal override {
         DSROracleForwarderGnosis(address(forwarder)).refresh(500_000);
+    }
+
+    function relayMessagesAcrossBridge() internal override {
+        bridge.relayMessagesToDestination(true);
     }
 
 }
