@@ -14,9 +14,9 @@ import { DSROracleForwarderBaseChain }   from "src/forwarders/DSROracleForwarder
 import { DSROracleForwarderGnosis }      from "src/forwarders/DSROracleForwarderGnosis.sol";
 import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
 
-import { DSROracleReceiverOptimism } from "src/receivers/DSROracleReceiverOptimism.sol";
-import { DSROracleReceiverGnosis }   from "src/receivers/DSROracleReceiverGnosis.sol";
-import { DSROracleReceiverArbitrum } from "src/receivers/DSROracleReceiverArbitrum.sol";
+import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
+import { ArbitrumReceiver } from "xchain-helpers/receivers/ArbitrumReceiver.sol";
+import { OptimismReceiver } from "xchain-helpers/receivers/OptimismReceiver.sol";
 
 contract Deploy is Script {
 
@@ -41,7 +41,7 @@ contract Deploy is Script {
 
         vm.startBroadcast();
         DSRAuthOracle oracle = new DSRAuthOracle();
-        address receiver = deployReceiver(forwarder, oracle);
+        address receiver = deployReceiver(forwarder, address(oracle));
         require(receiver == expectedReceiver, "receiver mismatch");
         DSRBalancerRateProviderAdapter adapter = new DSRBalancerRateProviderAdapter(oracle);
 
@@ -63,7 +63,7 @@ contract Deploy is Script {
         return address(0);
     }
 
-    function deployReceiver(address, IDSRAuthOracle) internal virtual returns (address) {
+    function deployReceiver(address, address) internal virtual returns (address) {
         return address(0);
     }
 
@@ -79,8 +79,8 @@ contract DeployOptimism is Deploy {
         return address(new DSROracleForwarderOptimism(MCD_POT, receiver));
     }
 
-    function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
-        return address(new DSROracleReceiverOptimism(forwarder, oracle));
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        return address(new OptimismReceiver(forwarder, oracle));
     }
 
 }
@@ -95,8 +95,8 @@ contract DeployBase is Deploy {
         return address(new DSROracleForwarderBaseChain(MCD_POT, receiver));
     }
 
-    function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
-        return address(new DSROracleReceiverOptimism(forwarder, oracle));
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        return address(new OptimismReceiver(forwarder, oracle));
     }
 
 }
@@ -111,8 +111,8 @@ contract DeployGnosis is Deploy {
         return address(new DSROracleForwarderGnosis(MCD_POT, receiver));
     }
 
-    function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
-        return address(new DSROracleReceiverGnosis(Gnosis.L2_AMB, 1, forwarder, oracle));
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        return address(new AMBReceiver(Gnosis.L2_AMB, bytes32(uint256(1)), forwarder, oracle));
     }
 
 }
@@ -127,8 +127,8 @@ contract DeployArbitrumOne is Deploy {
         return address(new DSROracleForwarderArbitrumOne(MCD_POT, receiver));
     }
 
-    function deployReceiver(address forwarder, IDSRAuthOracle oracle) internal override returns (address) {
-        return address(new DSROracleReceiverArbitrum(forwarder, oracle));
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        return address(new ArbitrumReceiver(forwarder, oracle));
     }
 
 }

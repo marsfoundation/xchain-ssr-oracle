@@ -3,25 +3,29 @@ pragma solidity ^0.8.0;
 
 import "./DSROracleXChainIntegrationBase.t.sol";
 
-import { OptimismDomain } from "xchain-helpers/testing/OptimismDomain.sol";
+import { OptimismBridgeTesting } from "xchain-helpers/testing/bridges/OptimismBridgeTesting.sol";
+import { OptimismReceiver }      from "xchain-helpers/receivers/OptimismReceiver.sol";
 
-import { DSROracleForwarderBaseChain } from "../src/forwarders/DSROracleForwarderBaseChain.sol";
-import { DSROracleReceiverOptimism }  from "../src/receivers/DSROracleReceiverOptimism.sol";
+import { DSROracleForwarderBaseChain } from "src/forwarders/DSROracleForwarderBaseChain.sol";
 
-contract DSROracleIntegrationBaseTest is DSROracleXChainIntegrationBaseTest {
+contract DSROracleIntegrationBaseChainTest is DSROracleXChainIntegrationBaseTest {
+
+    using DomainHelpers         for *;
+    using OptimismBridgeTesting for *;
 
     function setupDomain() internal override {
-        remote = new OptimismDomain(getChain('base'), mainnet);
+        remote = getChain('base').createFork();
+        bridge = OptimismBridgeTesting.createNativeBridge(mainnet, remote);
 
         mainnet.selectFork();
 
-        address expectedReceiver = vm.computeCreateAddress(address(this), 5);
+        address expectedReceiver = vm.computeCreateAddress(address(this), 3);
         forwarder = new DSROracleForwarderBaseChain(address(pot), expectedReceiver);
 
         remote.selectFork();
 
         oracle = new DSRAuthOracle();
-        DSROracleReceiverOptimism receiver = new DSROracleReceiverOptimism(address(forwarder), oracle);
+        OptimismReceiver receiver = new OptimismReceiver(address(forwarder), address(oracle));
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
 
         assertEq(address(receiver), expectedReceiver);
@@ -36,6 +40,10 @@ contract DSROracleIntegrationBaseTest is DSROracleXChainIntegrationBaseTest {
 
     function doRefresh() internal override {
         DSROracleForwarderBaseChain(address(forwarder)).refresh(500_000);
+    }
+
+    function relayMessagesAcrossBridge() internal override {
+        bridge.relayMessagesToDestination(true);
     }
 
 }

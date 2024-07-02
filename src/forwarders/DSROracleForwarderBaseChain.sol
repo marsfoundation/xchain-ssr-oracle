@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { XChainForwarders } from 'xchain-helpers/XChainForwarders.sol';
+import { OptimismForwarder } from 'xchain-helpers/forwarders/OptimismForwarder.sol';
 
 import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
 
@@ -12,7 +12,8 @@ contract DSROracleForwarderBaseChain is DSROracleForwarderBase {
     }
 
     function refresh(uint256 gasLimit) public {
-        XChainForwarders.sendMessageBase(
+        OptimismForwarder.sendMessageL1toL2(
+            OptimismForwarder.L1_CROSS_DOMAIN_BASE,
             address(l2Oracle),
             _packMessage(),
             gasLimit

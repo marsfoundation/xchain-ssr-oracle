@@ -1,27 +1,31 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { ArbitrumDomain } from "xchain-helpers/testing/ArbitrumDomain.sol";
-
-import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
-import { DSROracleReceiverArbitrum }     from "src/receivers/DSROracleReceiverArbitrum.sol";
-
 import "./DSROracleXChainIntegrationBase.t.sol";
 
-contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest {
+import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBridgeTesting.sol";
+import { ArbitrumReceiver }      from "xchain-helpers/receivers/ArbitrumReceiver.sol";
+
+import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
+
+contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTest {
+
+    using DomainHelpers         for *;
+    using ArbitrumBridgeTesting for *;
 
     function setupDomain() internal override {
-        remote = new ArbitrumDomain(getChain('arbitrum_one'), mainnet);
+        remote = getChain('arbitrum_one').createFork();
+        bridge = ArbitrumBridgeTesting.createNativeBridge(mainnet, remote);
 
         mainnet.selectFork();
 
-        address expectedReceiver = computeCreateAddress(address(this), 5);
+        address expectedReceiver = computeCreateAddress(address(this), 4);
         forwarder = new DSROracleForwarderArbitrumOne(address(pot), expectedReceiver);
 
         remote.selectFork();
 
         oracle = new DSRAuthOracle();
-        DSROracleReceiverArbitrum receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
+        ArbitrumReceiver receiver = new ArbitrumReceiver(address(forwarder), address(oracle));
         
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
 
@@ -35,15 +39,12 @@ contract DSROracleIntegrationArbitrumTest is DSROracleXChainIntegrationBaseTest 
         assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
     }
 
-    function test_constructor_receiver() public {
-        DSROracleReceiverArbitrum receiver = new DSROracleReceiverArbitrum(address(forwarder), oracle);
-
-        assertEq(address(receiver.oracle()), address(oracle));
-        assertEq(receiver.l1Authority(),     address(forwarder));
-    }
-
     function doRefresh() internal override {
         DSROracleForwarderArbitrumOne(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
+    }
+
+    function relayMessagesAcrossBridge() internal override {
+        bridge.relayMessagesToDestination(true);
     }
 
 }

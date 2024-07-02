@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { XChainForwarders } from 'xchain-helpers/XChainForwarders.sol';
+import { AMBForwarder } from 'xchain-helpers/forwarders/AMBForwarder.sol';
 
 import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
 
@@ -12,7 +12,7 @@ contract DSROracleForwarderGnosis is DSROracleForwarderBase {
     }
 
     function refresh(uint256 gasLimit) public {
-        XChainForwarders.sendMessageGnosis(
+        AMBForwarder.sendMessageEthereumToGnosisChain(
             address(l2Oracle),
             _packMessage(),
             gasLimit
