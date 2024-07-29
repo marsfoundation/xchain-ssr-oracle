@@ -18,19 +18,20 @@ Oracle receives data from an authorized data provider. This is intended to be on
 
 ### Forwarders + Receivers
 
-These are bridge-specific messaging contracts. Forwarders permissionlessly relay `pot` data. Receivers decode this message and forward it to the `DSRAuthOracle`.
+These are bridge-specific messaging contracts. Forwarders permissionlessly relay `pot` data. Receivers decode this message and forward it to the `DSRAuthOracle`. Please note that receivers are generic and part of the `xchain-helpers` repository.
 
 ## Supported Chains
 
  * Optimism
  * Base
+ * Aribitrum One
  * Gnosis Chain
 
 ## Deployment Instructions
 
 Run `make deploy-XXX` where XXX is one of the supported networks. Be sure to have the `ETH_FROM` environment variable set to the deployer address as well as the relevant environment variables set for RPCs and contract verification. You can see contract verification api key names in `foundry.toml`.
 
-## Deployments
+## Legacy Deployments
 
 ### Optimism
 
