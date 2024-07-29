@@ -10,6 +10,8 @@ import { IPot }                       from '../interfaces/IPot.sol';
  */
 abstract contract DSROracleForwarderBase {
 
+    event LastSeenPotDataRefreshed(IDSROracle.PotData potData);
+
     IPot               public immutable pot;
     address            public immutable l2Oracle;
     
@@ -27,6 +29,7 @@ abstract contract DSROracleForwarderBase {
             rho: uint40(pot.rho())
         });
         _lastSeenPotData = potData;
+        emit LastSeenPotDataRefreshed(potData);
         return abi.encodeCall(
             IDSRAuthOracle.setPotData,
             (potData)
