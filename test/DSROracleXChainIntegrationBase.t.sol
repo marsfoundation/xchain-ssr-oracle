@@ -20,6 +20,8 @@ interface IPotDripLike {
 
 abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
+    event LastSeenPotDataUpdated(IDSROracle.PotData potData);
+
     using DomainHelpers for *;
 
     uint256 constant CURR_DSR = 1.000000001547125957863212448e27;
@@ -81,6 +83,12 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         assertEq(forwarder.getLastSeenChi(), 0);
         assertEq(forwarder.getLastSeenRho(), 0);
 
+        vm.expectEmit(address(forwarder));
+        emit LastSeenPotDataUpdated(IDSROracle.PotData({
+            dsr: uint96(CURR_DSR),
+            chi: uint120(CURR_CHI),
+            rho: uint40(CURR_RHO)
+        }));
         doRefresh();
 
         data = forwarder.getLastSeenPotData();
