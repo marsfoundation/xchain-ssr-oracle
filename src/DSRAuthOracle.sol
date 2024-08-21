@@ -20,7 +20,6 @@ contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
 
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setRoleAdmin(DATA_PROVIDER_ROLE, DEFAULT_ADMIN_ROLE);
     }
 
     function setMaxDSR(uint256 _maxDSR) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -32,6 +31,18 @@ contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
 
     function setPotData(IDSROracle.PotData calldata nextData) external onlyRole(DATA_PROVIDER_ROLE) {
         IDSROracle.PotData memory previousData = _data;
+
+        // Timestamp must be in the past
+        require(nextData.rho <= block.timestamp, 'DSRAuthOracle/invalid-rho');
+
+        // DSR lower bound
+        require(nextData.dsr >= RAY, 'DSRAuthOracle/invalid-dsr');
+
+        // Optional DSR upper bound
+        uint256 _maxDSR = maxDSR;
+        if (_maxDSR != 0) {
+            require(nextData.dsr <= _maxDSR, 'DSRAuthOracle/invalid-dsr');
+        }
 
         if (_data.rho == 0) {
             // This is a first update
@@ -46,21 +57,11 @@ contract DSRAuthOracle is AccessControl, DSROracleBase, IDSRAuthOracle {
         // The same timestamp is allowed as the other values will only change upon increasing rho
         require(nextData.rho >= previousData.rho, 'DSRAuthOracle/invalid-rho');
 
-        // Timestamp must be in the past
-        require(nextData.rho <= block.timestamp, 'DSRAuthOracle/invalid-rho');
-
-        // DSR lower bound
-        require(nextData.dsr >= RAY, 'DSRAuthOracle/invalid-dsr');
-
         // `chi` must be non-decreasing
         require(nextData.chi >= previousData.chi, 'DSRAuthOracle/invalid-chi');
 
-        // Extra checks if `maxDSR` is set
-        uint256 _maxDSR = maxDSR;
+        // Accumulation cannot be larger than the time elapsed at the max dsr
         if (_maxDSR != 0) {
-            require(nextData.dsr <= _maxDSR, 'DSRAuthOracle/invalid-dsr');
-
-            // Accumulation cannot be larger than the time elapsed at the max dsr
             uint256 chiMax = _rpow(_maxDSR, nextData.rho - previousData.rho) * previousData.chi / RAY;
             require(nextData.chi <= chiMax, 'DSRAuthOracle/invalid-chi');
         }
