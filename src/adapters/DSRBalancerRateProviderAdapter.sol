@@ -20,7 +20,7 @@ contract DSRBalancerRateProviderAdapter is IRateProvider {
     }
 
     /**
-     * @return The value of sDAI in terms of DAI.
+     * @return The approximated value of 1e18 sDAI in terms of DAI.
      */
     function getRate() external view override returns (uint256) {
         return dsrOracle.getConversionRateBinomialApprox() / 1e9;
