@@ -49,7 +49,7 @@ abstract contract DSROracleBase is IDSROracle {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
-        require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
+        require(timestamp > rho, "DSROracleBase/invalid-timestamp");
 
         uint256 duration;
         unchecked {
@@ -109,7 +109,7 @@ abstract contract DSROracleBase is IDSROracle {
         IDSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
-        require(timestamp >= rho, "DSROracleBase/invalid-timestamp");
+        require(timestamp > rho, "DSROracleBase/invalid-timestamp");
         
         uint256 duration;
         uint256 rate;
