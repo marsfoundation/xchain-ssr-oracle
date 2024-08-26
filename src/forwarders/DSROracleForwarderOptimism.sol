@@ -11,7 +11,7 @@ contract DSROracleForwarderOptimism is DSROracleForwarderBase {
         // Intentionally left blank
     }
 
-    function refresh(uint256 gasLimit) public {
+    function refresh(uint32 gasLimit) public {
         OptimismForwarder.sendMessageL1toL2(
             OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM,
             address(l2Oracle),

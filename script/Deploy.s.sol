@@ -101,6 +101,22 @@ contract DeployBase is Deploy {
 
 }
 
+contract DeployWorldChain is Deploy {
+    
+    function run() external {
+        deploy(vm.envString("WORLD_CHAIN_RPC_URL"));
+    }
+
+    function deployForwarder(address receiver) internal override returns (address) {
+        return address(new DSROracleForwarderBaseChain(MCD_POT, receiver));
+    }
+
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        return address(new OptimismReceiver(forwarder, oracle));
+    }
+
+}
+
 contract DeployGnosis is Deploy {
     
     function run() external {
