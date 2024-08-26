@@ -24,6 +24,7 @@ These are bridge-specific messaging contracts. Forwarders permissionlessly relay
 
  * Optimism
  * Base
+ * World Chain
  * Aribitrum One
  * Gnosis Chain
 
