@@ -5,7 +5,7 @@ import { OptimismForwarder } from 'xchain-helpers/forwarders/OptimismForwarder.s
 
 import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
 
-contract DSROracleForwarderBaseChain is DSROracleForwarderBase {
+contract DSROracleForwarderWorldChain is DSROracleForwarderBase {
 
     constructor(address _pot, address _l2Oracle) DSROracleForwarderBase(_pot, _l2Oracle) {
         // Intentionally left blank
@@ -13,7 +13,7 @@ contract DSROracleForwarderBaseChain is DSROracleForwarderBase {
 
     function refresh(uint32 gasLimit) public {
         OptimismForwarder.sendMessageL1toL2(
-            OptimismForwarder.L1_CROSS_DOMAIN_BASE,
+            OptimismForwarder.L1_CROSS_DOMAIN_WORLD_CHAIN,
             address(l2Oracle),
             _packMessage(),
             gasLimit

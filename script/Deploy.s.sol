@@ -11,6 +11,7 @@ import { DSRAuthOracle }                  from "src/DSRAuthOracle.sol";
 
 import { DSROracleForwarderOptimism }    from "src/forwarders/DSROracleForwarderOptimism.sol";
 import { DSROracleForwarderBaseChain }   from "src/forwarders/DSROracleForwarderBaseChain.sol";
+import { DSROracleForwarderWorldChain }  from "src/forwarders/DSROracleForwarderWorldChain.sol";
 import { DSROracleForwarderGnosis }      from "src/forwarders/DSROracleForwarderGnosis.sol";
 import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
 
@@ -93,6 +94,22 @@ contract DeployBase is Deploy {
 
     function deployForwarder(address receiver) internal override returns (address) {
         return address(new DSROracleForwarderBaseChain(MCD_POT, receiver));
+    }
+
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        return address(new OptimismReceiver(forwarder, oracle));
+    }
+
+}
+
+contract DeployWorldChain is Deploy {
+    
+    function run() external {
+        deploy(vm.envString("WORLD_CHAIN_RPC_URL"));
+    }
+
+    function deployForwarder(address receiver) internal override returns (address) {
+        return address(new DSROracleForwarderWorldChain(MCD_POT, receiver));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {

@@ -24,9 +24,9 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
 
     using DomainHelpers for *;
 
-    uint256 constant CURR_DSR = 1.000000001547125957863212448e27;
-    uint256 constant CURR_CHI = 1.039942074479136064327544607e27;
-    uint256 constant CURR_RHO = 1698170603;
+    uint256 constant CURR_DSR = 1.000000001847694957439350562e27;
+    uint256 constant CURR_CHI = 1.104716781696254840575825135e27;
+    uint256 constant CURR_RHO = 1724691803;
 
     Domain mainnet;
     Domain remote;
@@ -43,7 +43,7 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
     DSRBalancerRateProviderAdapter balancerAdapter;
 
     function setUp() public {
-        mainnet = getChain("mainnet").createSelectFork(18421823);  // Oct 24, 2023
+        mainnet = getChain("mainnet").createSelectFork(20614144);  // Aug 26, 2024
 
         assertEq(IPot(pot).dsr(), CURR_DSR);
         assertEq(IPot(pot).chi(), CURR_CHI);
@@ -73,7 +73,7 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         vm.warp(CURR_RHO + 30 days);
 
         uint256 sdaiConversionRate = IERC4626(sdai).convertToAssets(1e18);
-        assertEq(sdaiConversionRate, 1.044120771690352453e18);
+        assertEq(sdaiConversionRate, 1.110020208801179841e18);
 
         IDSROracle.PotData memory data = forwarder.getLastSeenPotData();
         assertEq(data.dsr,                   0);
@@ -106,7 +106,7 @@ abstract contract DSROracleXChainIntegrationBaseTest is Test {
         assertEq(oracle.getChi(), CURR_CHI);
         assertEq(oracle.getRho(), CURR_RHO);
 
-        assertEq(balancerAdapter.getRate(), 1.044120769556671376e18);
+        assertEq(balancerAdapter.getRate(), 1.110020207789437757e18);
         assertApproxEqAbs(balancerAdapter.getRate(), sdaiConversionRate, 1e10);
     }
 
