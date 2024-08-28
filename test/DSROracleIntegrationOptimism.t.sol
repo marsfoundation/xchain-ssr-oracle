@@ -6,7 +6,7 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 import { OptimismBridgeTesting } from "xchain-helpers/testing/bridges/OptimismBridgeTesting.sol";
 import { OptimismReceiver }      from "xchain-helpers/receivers/OptimismReceiver.sol";
 
-import { DSROracleForwarderOptimism } from "src/forwarders/DSROracleForwarderOptimism.sol";
+import { DSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/DSROracleForwarderOptimism.sol";
 
 contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest {
 
@@ -20,7 +20,7 @@ contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest 
         mainnet.selectFork();
 
         address expectedReceiver = vm.computeCreateAddress(address(this), 3);
-        forwarder = new DSROracleForwarderOptimism(address(pot), expectedReceiver);
+        forwarder = new DSROracleForwarderOptimism(address(pot), expectedReceiver, OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM);
 
         remote.selectFork();
 
@@ -32,7 +32,7 @@ contract DSROracleIntegrationOptimismTest is DSROracleXChainIntegrationBaseTest 
     }
 
     function test_constructor_forwarder() public {
-        DSROracleForwarderOptimism forwarder = new DSROracleForwarderOptimism(address(pot), makeAddr("receiver"));
+        DSROracleForwarderOptimism forwarder = new DSROracleForwarderOptimism(address(pot), makeAddr("receiver"), OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM);
 
         assertEq(address(forwarder.pot()), address(pot));
         assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));

@@ -6,7 +6,7 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 import { OptimismBridgeTesting } from "xchain-helpers/testing/bridges/OptimismBridgeTesting.sol";
 import { OptimismReceiver }      from "xchain-helpers/receivers/OptimismReceiver.sol";
 
-import { DSROracleForwarderBaseChain } from "src/forwarders/DSROracleForwarderBaseChain.sol";
+import { DSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/DSROracleForwarderOptimism.sol";
 
 contract DSROracleIntegrationBaseChainTest is DSROracleXChainIntegrationBaseTest {
 
@@ -20,7 +20,7 @@ contract DSROracleIntegrationBaseChainTest is DSROracleXChainIntegrationBaseTest
         mainnet.selectFork();
 
         address expectedReceiver = vm.computeCreateAddress(address(this), 3);
-        forwarder = new DSROracleForwarderBaseChain(address(pot), expectedReceiver);
+        forwarder = new DSROracleForwarderOptimism(address(pot), expectedReceiver, OptimismForwarder.L1_CROSS_DOMAIN_BASE);
 
         remote.selectFork();
 
@@ -31,15 +31,8 @@ contract DSROracleIntegrationBaseChainTest is DSROracleXChainIntegrationBaseTest
         assertEq(address(receiver), expectedReceiver);
     }
 
-    function test_constructor_forwarder() public {
-        DSROracleForwarderBaseChain forwarder = new DSROracleForwarderBaseChain(address(pot), makeAddr("receiver"));
-
-        assertEq(address(forwarder.pot()), address(pot));
-        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
-    }
-
     function doRefresh() internal override {
-        DSROracleForwarderBaseChain(address(forwarder)).refresh(500_000);
+        DSROracleForwarderOptimism(address(forwarder)).refresh(500_000);
     }
 
     function relayMessagesAcrossBridge() internal override {

@@ -7,13 +7,15 @@ import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
 
 contract DSROracleForwarderOptimism is DSROracleForwarderBase {
 
-    constructor(address _pot, address _l2Oracle) DSROracleForwarderBase(_pot, _l2Oracle) {
-        // Intentionally left blank
+    address public immutable l1CrossDomain;
+
+    constructor(address _pot, address _l2Oracle, address _l1CrossDomain) DSROracleForwarderBase(_pot, _l2Oracle) {
+        l1CrossDomain = _l1CrossDomain;
     }
 
     function refresh(uint32 gasLimit) public {
         OptimismForwarder.sendMessageL1toL2(
-            OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM,
+            l1CrossDomain,
             address(l2Oracle),
             _packMessage(),
             gasLimit

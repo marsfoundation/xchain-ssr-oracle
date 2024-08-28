@@ -5,15 +5,12 @@ import "forge-std/Script.sol";
 
 import { Gnosis } from "sparklend-address-registry/src/Gnosis.sol";
 
-import { IDSRAuthOracle }                 from "src/interfaces/IDSRAuthOracle.sol";
 import { DSRBalancerRateProviderAdapter } from "src/adapters/DSRBalancerRateProviderAdapter.sol";
 import { DSRAuthOracle }                  from "src/DSRAuthOracle.sol";
 
-import { DSROracleForwarderOptimism }    from "src/forwarders/DSROracleForwarderOptimism.sol";
-import { DSROracleForwarderBaseChain }   from "src/forwarders/DSROracleForwarderBaseChain.sol";
-import { DSROracleForwarderWorldChain }  from "src/forwarders/DSROracleForwarderWorldChain.sol";
-import { DSROracleForwarderGnosis }      from "src/forwarders/DSROracleForwarderGnosis.sol";
-import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
+import { DSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/DSROracleForwarderOptimism.sol";
+import { DSROracleForwarderGnosis }                      from "src/forwarders/DSROracleForwarderGnosis.sol";
+import { DSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/DSROracleForwarderArbitrum.sol";
 
 import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
 import { ArbitrumReceiver } from "xchain-helpers/receivers/ArbitrumReceiver.sol";
@@ -77,7 +74,7 @@ contract DeployOptimism is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new DSROracleForwarderOptimism(MCD_POT, receiver));
+        return address(new DSROracleForwarderOptimism(MCD_POT, receiver, OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -93,7 +90,7 @@ contract DeployBase is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new DSROracleForwarderBaseChain(MCD_POT, receiver));
+        return address(new DSROracleForwarderOptimism(MCD_POT, receiver, OptimismForwarder.L1_CROSS_DOMAIN_BASE));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -109,7 +106,7 @@ contract DeployWorldChain is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new DSROracleForwarderWorldChain(MCD_POT, receiver));
+        return address(new DSROracleForwarderOptimism(MCD_POT, receiver, OptimismForwarder.L1_CROSS_DOMAIN_WORLD_CHAIN));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -141,7 +138,7 @@ contract DeployArbitrumOne is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new DSROracleForwarderArbitrumOne(MCD_POT, receiver));
+        return address(new DSROracleForwarderArbitrum(MCD_POT, receiver, ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
