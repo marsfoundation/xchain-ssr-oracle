@@ -38,8 +38,8 @@ Run `make deploy-XXX` where XXX is one of the supported networks. Be sure to hav
 
 Forwarder (Ethereum): [0xA34437dAAE56A7CC6DC757048933D7777b3e547B](https://etherscan.io/address/0xA34437dAAE56A7CC6DC757048933D7777b3e547B#code)  
 AuthOracle (World Chain): [0x779053E25267B591Dcfbb20b2397462aaaD6B776](https://worldchain-mainnet.explorer.alchemy.com/address/0x779053E25267B591Dcfbb20b2397462aaaD6B776?tab=contract)  
-Receiver (World Chain): [0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64]https://worldchain-mainnet.explorer.alchemy.com/address/0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64?tab=contract  
-Balancer Rate Provider (World Chain): [0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3]https://worldchain-mainnet.explorer.alchemy.com/address/0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3?tab=contract  
+Receiver (World Chain): [0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64](https://worldchain-mainnet.explorer.alchemy.com/address/0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64?tab=contract)  
+Balancer Rate Provider (World Chain): [0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3](https://worldchain-mainnet.explorer.alchemy.com/address/0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3?tab=contract)  
 
 ## Legacy Deployments
 
