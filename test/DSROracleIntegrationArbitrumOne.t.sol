@@ -6,7 +6,7 @@ import "./DSROracleXChainIntegrationBase.t.sol";
 import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBridgeTesting.sol";
 import { ArbitrumReceiver }      from "xchain-helpers/receivers/ArbitrumReceiver.sol";
 
-import { DSROracleForwarderArbitrumOne } from "src/forwarders/DSROracleForwarderArbitrumOne.sol";
+import { DSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/DSROracleForwarderArbitrum.sol";
 
 contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTest {
 
@@ -20,7 +20,7 @@ contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTe
         mainnet.selectFork();
 
         address expectedReceiver = computeCreateAddress(address(this), 4);
-        forwarder = new DSROracleForwarderArbitrumOne(address(pot), expectedReceiver);
+        forwarder = new DSROracleForwarderArbitrum(address(pot), expectedReceiver, ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE);
 
         remote.selectFork();
 
@@ -33,14 +33,14 @@ contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTe
     }
 
     function test_constructor_forwarder() public {
-        DSROracleForwarderArbitrumOne forwarder = new DSROracleForwarderArbitrumOne(address(pot), makeAddr("receiver"));
+        DSROracleForwarderArbitrum forwarder = new DSROracleForwarderArbitrum(address(pot), makeAddr("receiver"), ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE);
 
         assertEq(address(forwarder.pot()), address(pot));
         assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
     }
 
     function doRefresh() internal override {
-        DSROracleForwarderArbitrumOne(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
+        DSROracleForwarderArbitrum(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
     }
 
     function relayMessagesAcrossBridge() internal override {
