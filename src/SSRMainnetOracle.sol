@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 import { IPot } from './interfaces/IPot.sol';
 
-import { DSROracleBase, IDSROracle } from './DSROracleBase.sol';
+import { SSROracleBase, ISSROracle } from './SSROracleBase.sol';
 
 /**
- * @title  DSRMainnetOracle
- * @notice DSR Oracle that sits on the same chain as MCD.
+ * @title  SSRMainnetOracle
+ * @notice SSR Oracle that sits on the same chain as MCD.
  */
-contract DSRMainnetOracle is DSROracleBase {
+contract SSRMainnetOracle is SSROracleBase {
 
     IPot public immutable pot;
 
@@ -22,11 +22,11 @@ contract DSRMainnetOracle is DSROracleBase {
     /**
     * @notice Will refresh the local storage with the updated values.
     * @dev    This does not need to be called that frequently as the values provide complete precision if needed.
-    *         `refresh()` should be called immediately whenever the `dsr` value changes.
+    *         `refresh()` should be called immediately whenever the `ssr` value changes.
     */
     function refresh() public {
-        _setPotData(IDSROracle.PotData({
-            dsr: uint96(pot.dsr()),
+        _setPotData(ISSROracle.PotData({
+            ssr: uint96(pot.ssr()),
             chi: uint120(pot.chi()),
             rho: uint40(pot.rho())
         }));

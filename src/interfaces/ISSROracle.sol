@@ -2,13 +2,13 @@
 pragma solidity >=0.8.0;
 
 /**
- * @title  IDSROracle
- * @notice Consolidated DSR reporting along with some convenience functions.
+ * @title  ISSROracle
+ * @notice Consolidated SSR reporting along with some convenience functions.
  */
-interface IDSROracle {
+interface ISSROracle {
 
     struct PotData {
-        uint96  dsr;  // Dai Savings Rate in per-second value [ray]
+        uint96  ssr;  // Sky Savings Rate in per-second value [ray]
         uint120 chi;  // Last computed conversion rate [ray]
         uint40  rho;  // Last computed timestamp [seconds]
     }
@@ -20,16 +20,16 @@ interface IDSROracle {
     event SetPotData(PotData nextData);
 
     /**
-     * @notice Retrieve the current PotData: dsr, chi, and rho.
+     * @notice Retrieve the current PotData: ssr, chi, and rho.
      * @return The current PotData struct.
      */
     function getPotData() external view returns (PotData memory);
 
     /**
-     * @notice Get the current Dai Savings Rate.
-     * @return The Dai Savings Rate in per-second value [ray].
+     * @notice Get the current Sky Savings Rate.
+     * @return The Sky Savings Rate in per-second value [ray].
      */
-    function getDSR() external view returns (uint256);
+    function getSSR() external view returns (uint256);
 
     /**
      * @notice Get the last computed conversion rate.

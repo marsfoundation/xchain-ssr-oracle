@@ -1,30 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { IDSROracle } from './interfaces/IDSROracle.sol';
+import { ISSROracle } from './interfaces/ISSROracle.sol';
 
 /**
- * @title  DSROracleBase
- * @notice Base functionality for all DSR oracles.
+ * @title  SSROracleBase
+ * @notice Base functionality for all SSR oracles.
  */
-abstract contract DSROracleBase is IDSROracle {
+abstract contract SSROracleBase is ISSROracle {
 
     uint256 private constant RAY = 1e27;
 
-    IDSROracle.PotData internal _data;
+    ISSROracle.PotData internal _data;
 
-    function _setPotData(IDSROracle.PotData memory nextData) internal {
+    function _setPotData(ISSROracle.PotData memory nextData) internal {
         _data = nextData;
 
         emit SetPotData(nextData);
     }
 
-    function getPotData() external override view returns (IDSROracle.PotData memory) {
+    function getPotData() external override view returns (ISSROracle.PotData memory) {
         return _data;
     }
 
-    function getDSR() external override view returns (uint256) {
-        return _data.dsr;
+    function getSSR() external override view returns (uint256) {
+        return _data.ssr;
     }
 
     function getChi() external override view returns (uint256) {
@@ -37,7 +37,7 @@ abstract contract DSROracleBase is IDSROracle {
 
     function getAPR() external override view returns (uint256) {
         unchecked {
-            return (_data.dsr - RAY) * 365 days;
+            return (_data.ssr - RAY) * 365 days;
         }
     }
 
@@ -46,16 +46,16 @@ abstract contract DSROracleBase is IDSROracle {
     }
 
     function getConversionRate(uint256 timestamp) public override view returns (uint256) {
-        IDSROracle.PotData memory d = _data;
+        ISSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
-        require(timestamp > rho, "DSROracleBase/invalid-timestamp");
+        require(timestamp > rho, "SSROracleBase/invalid-timestamp");
 
         uint256 duration;
         unchecked {
             duration = timestamp - rho;
         }
-        return _rpow(d.dsr, duration) * uint256(d.chi) / RAY;
+        return _rpow(d.ssr, duration) * uint256(d.chi) / RAY;
     }
 
     function getConversionRateBinomialApprox() external override view returns (uint256) {
@@ -64,16 +64,16 @@ abstract contract DSROracleBase is IDSROracle {
 
     // Copied and slightly modified from https://github.com/aave/aave-v3-core/blob/42103522764546a4eeb856b741214fa5532be52a/contracts/protocol/libraries/math/MathUtils.sol#L50
     function getConversionRateBinomialApprox(uint256 timestamp) public override view returns (uint256) {
-        IDSROracle.PotData memory d = _data;
+        ISSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
-        require(timestamp > rho, "DSROracleBase/invalid-timestamp");
+        require(timestamp > rho, "SSROracleBase/invalid-timestamp");
         
         uint256 exp;
         uint256 rate;
         unchecked {
             exp = timestamp - rho;
-            rate = d.dsr - RAY;
+            rate = d.ssr - RAY;
         }
 
         uint256 expMinusOne;
@@ -106,16 +106,16 @@ abstract contract DSROracleBase is IDSROracle {
     }
 
     function getConversionRateLinearApprox(uint256 timestamp) public override view returns (uint256) {
-        IDSROracle.PotData memory d = _data;
+        ISSROracle.PotData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
-        require(timestamp > rho, "DSROracleBase/invalid-timestamp");
+        require(timestamp > rho, "SSROracleBase/invalid-timestamp");
         
         uint256 duration;
         uint256 rate;
         unchecked {
             duration = timestamp - rho;
-            rate = uint256(d.dsr) - RAY;
+            rate = uint256(d.ssr) - RAY;
         }
         return (rate * duration + RAY) * uint256(d.chi) / RAY;
     }

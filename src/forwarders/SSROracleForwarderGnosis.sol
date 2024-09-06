@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import { AMBForwarder } from 'xchain-helpers/forwarders/AMBForwarder.sol';
 
-import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
+import { SSROracleForwarderBase } from './SSROracleForwarderBase.sol';
 
-contract DSROracleForwarderGnosis is DSROracleForwarderBase {
+contract SSROracleForwarderGnosis is SSROracleForwarderBase {
 
-    constructor(address _pot, address _l2Oracle) DSROracleForwarderBase(_pot, _l2Oracle) {
+    constructor(address _pot, address _l2Oracle) SSROracleForwarderBase(_pot, _l2Oracle) {
         // Intentionally left blank
     }
 

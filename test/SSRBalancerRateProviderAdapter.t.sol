@@ -3,10 +3,10 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import { IDSROracle }                     from "../src/interfaces/IDSROracle.sol";
-import { DSRBalancerRateProviderAdapter } from "../src/adapters/DSRBalancerRateProviderAdapter.sol";
+import { ISSROracle }                     from "../src/interfaces/ISSROracle.sol";
+import { SSRBalancerRateProviderAdapter } from "../src/adapters/SSRBalancerRateProviderAdapter.sol";
 
-contract DSROracleMock {
+contract SSROracleMock {
 
     uint256 public conversionRate;
 
@@ -24,20 +24,20 @@ contract DSROracleMock {
     
 }
 
-contract DSRBalancerRateProviderAdapterTest is Test {
+contract SSRBalancerRateProviderAdapterTest is Test {
 
-    DSROracleMock oracle;
+    SSROracleMock oracle;
 
-    DSRBalancerRateProviderAdapter adapter;
+    SSRBalancerRateProviderAdapter adapter;
 
     function setUp() public {
-        oracle  = new DSROracleMock(1e27);
-        adapter = new DSRBalancerRateProviderAdapter(IDSROracle(address(oracle)));
+        oracle  = new SSROracleMock(1e27);
+        adapter = new SSRBalancerRateProviderAdapter(ISSROracle(address(oracle)));
     }
 
     function test_constructor() public {
-        adapter = new DSRBalancerRateProviderAdapter(IDSROracle(address(oracle)));
-        assertEq(address(adapter.dsrOracle()), address(oracle));
+        adapter = new SSRBalancerRateProviderAdapter(ISSROracle(address(oracle)));
+        assertEq(address(adapter.ssrOracle()), address(oracle));
     }
 
     function test_getRate() public {

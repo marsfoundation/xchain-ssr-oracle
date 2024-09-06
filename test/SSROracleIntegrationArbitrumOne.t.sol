@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./DSROracleXChainIntegrationBase.t.sol";
+import "./SSROracleXChainIntegrationBase.t.sol";
 
 import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBridgeTesting.sol";
 import { ArbitrumReceiver }      from "xchain-helpers/receivers/ArbitrumReceiver.sol";
 
-import { DSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/DSROracleForwarderArbitrum.sol";
+import { SSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/SSROracleForwarderArbitrum.sol";
 
-contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTest {
+contract SSROracleIntegrationArbitrumOneTest is SSROracleXChainIntegrationBaseTest {
 
     using DomainHelpers         for *;
     using ArbitrumBridgeTesting for *;
@@ -20,11 +20,11 @@ contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTe
         mainnet.selectFork();
 
         address expectedReceiver = computeCreateAddress(address(this), 4);
-        forwarder = new DSROracleForwarderArbitrum(address(pot), expectedReceiver, ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE);
+        forwarder = new SSROracleForwarderArbitrum(address(susds), expectedReceiver, ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE);
 
         remote.selectFork();
 
-        oracle = new DSRAuthOracle();
+        oracle = new SSRAuthOracle();
         ArbitrumReceiver receiver = new ArbitrumReceiver(address(forwarder), address(oracle));
         
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
@@ -33,14 +33,14 @@ contract DSROracleIntegrationArbitrumOneTest is DSROracleXChainIntegrationBaseTe
     }
 
     function test_constructor_forwarder() public {
-        DSROracleForwarderArbitrum forwarder = new DSROracleForwarderArbitrum(address(pot), makeAddr("receiver"), ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE);
+        SSROracleForwarderArbitrum forwarder = new SSROracleForwarderArbitrum(address(susds), makeAddr("receiver"), ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE);
 
-        assertEq(address(forwarder.pot()), address(pot));
+        assertEq(address(forwarder.pot()), address(susds));
         assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
     }
 
     function doRefresh() internal override {
-        DSROracleForwarderArbitrum(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
+        SSROracleForwarderArbitrum(address(forwarder)).refresh{value:1 ether}(500_000, 1 gwei, block.basefee + 10 gwei);
     }
 
     function relayMessagesAcrossBridge() internal override {

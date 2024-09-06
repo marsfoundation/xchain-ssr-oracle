@@ -5,20 +5,20 @@ import "forge-std/Test.sol";
 
 import { PotMock } from "./mocks/PotMock.sol";
 
-import { DSRMainnetOracle, IDSROracle } from "../src/DSRMainnetOracle.sol";
+import { SSRMainnetOracle, ISSROracle } from "../src/SSRMainnetOracle.sol";
 
-contract DSRMainnetOracleTest is Test {
+contract SSRMainnetOracleTest is Test {
 
-    event SetPotData(IDSROracle.PotData nextData);
+    event SetPotData(ISSROracle.PotData nextData);
 
-    uint256 constant FIVE_PCT_APY_DSR        = 1.000000001547125957863212448e27;
+    uint256 constant FIVE_PCT_APY_SSR        = 1.000000001547125957863212448e27;
     uint256 constant FIVE_PCT_APY_APR        = 0.048790164207174267760128000e27;
-    uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.00000002197955315123915302e27;
+    uint256 constant ONE_HUNDRED_PCT_APY_SSR = 1.00000002197955315123915302e27;
 
     uint256 ONE_YEAR;
 
     PotMock          pot;
-    DSRMainnetOracle oracle;
+    SSRMainnetOracle oracle;
 
     function setUp() public {
         // To get some reasonable timestamps that are not 1
@@ -30,42 +30,42 @@ contract DSRMainnetOracleTest is Test {
 
         ONE_YEAR = block.timestamp + 365 days;
 
-        oracle = new DSRMainnetOracle(address(pot));
+        oracle = new SSRMainnetOracle(address(pot));
     }
 
     function test_storage_defaults() public {
-        IDSROracle.PotData memory data = oracle.getPotData();
+        ISSROracle.PotData memory data = oracle.getPotData();
 
-        assertEq(oracle.getDSR(), pot.dsr());
+        assertEq(oracle.getSSR(), pot.ssr());
         assertEq(oracle.getChi(), pot.chi());
         assertEq(oracle.getRho(), pot.rho());
-        assertEq(oracle.getDSR(), 1e27);
+        assertEq(oracle.getSSR(), 1e27);
         assertEq(oracle.getChi(), 1e27);
         assertEq(oracle.getRho(), block.timestamp - 365 days);
-        assertEq(data.dsr,        1e27);
+        assertEq(data.ssr,        1e27);
         assertEq(data.chi,        1e27);
         assertEq(data.rho,        block.timestamp - 365 days);
     }
 
     function test_refresh() public {
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
 
         vm.expectEmit();
-        emit SetPotData(IDSROracle.PotData({
-            dsr: uint96(FIVE_PCT_APY_DSR),
+        emit SetPotData(ISSROracle.PotData({
+            ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
         oracle.refresh();
 
-        IDSROracle.PotData memory data = oracle.getPotData();
+        ISSROracle.PotData memory data = oracle.getPotData();
 
-        assertEq(oracle.getDSR(), FIVE_PCT_APY_DSR);
+        assertEq(oracle.getSSR(), FIVE_PCT_APY_SSR);
         assertEq(oracle.getChi(), 1.03e27);
         assertEq(oracle.getRho(), block.timestamp);
-        assertEq(data.dsr,        FIVE_PCT_APY_DSR);
+        assertEq(data.ssr,        FIVE_PCT_APY_SSR);
         assertEq(data.chi,        1.03e27);
         assertEq(data.rho,        block.timestamp);
     }
@@ -73,7 +73,7 @@ contract DSRMainnetOracleTest is Test {
     function test_apr() public {
         assertEq(oracle.getAPR(), 0);
 
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
 
         assertEq(oracle.getAPR(), 0);
 
@@ -86,7 +86,7 @@ contract DSRMainnetOracleTest is Test {
         assertEq(oracle.getConversionRate(),         1e27);
         assertEq(oracle.getConversionRate(ONE_YEAR), 1e27);
 
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -97,7 +97,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_gas_getConversionRate_1hour() public {
         vm.pauseGasMetering();
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -108,7 +108,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_gas_getConversionRate_1year() public {
         vm.pauseGasMetering();
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -119,7 +119,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_getConversionRate_timestampUnderflowBoundary() public {
         uint256 rho = oracle.getRho();
-        vm.expectRevert("DSROracleBase/invalid-timestamp");
+        vm.expectRevert("SSROracleBase/invalid-timestamp");
         oracle.getConversionRate(rho - 1);
 
         oracle.getConversionRate(rho);
@@ -129,7 +129,7 @@ contract DSRMainnetOracleTest is Test {
         assertEq(oracle.getConversionRateBinomialApprox(),         1e27);
         assertEq(oracle.getConversionRateBinomialApprox(ONE_YEAR), 1e27);
 
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -140,7 +140,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_gas_getConversionRateBinomialApprox_1hour() public {
         vm.pauseGasMetering();
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -151,7 +151,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_gas_getConversionRateBinomialApprox_1year() public {
         vm.pauseGasMetering();
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -162,7 +162,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_getConversionRateBinomialApprox_timestampUnderflowBoundary() public {
         uint256 rho = oracle.getRho();
-        vm.expectRevert("DSROracleBase/invalid-timestamp");
+        vm.expectRevert("SSROracleBase/invalid-timestamp");
         oracle.getConversionRateBinomialApprox(rho - 1);
 
         oracle.getConversionRateBinomialApprox(rho);
@@ -172,7 +172,7 @@ contract DSRMainnetOracleTest is Test {
         assertEq(oracle.getConversionRateLinearApprox(),         1e27);
         assertEq(oracle.getConversionRateLinearApprox(ONE_YEAR), 1e27);
 
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -183,7 +183,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_gas_getConversionRateLinearApprox_1hour() public {
         vm.pauseGasMetering();
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -194,7 +194,7 @@ contract DSRMainnetOracleTest is Test {
 
     function test_gas_getConversionRateLinearApprox_1year() public {
         vm.pauseGasMetering();
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -205,14 +205,14 @@ contract DSRMainnetOracleTest is Test {
 
     function test_getConversionRateLinearApprox_timestampUnderflowBoundary() public {
         uint256 rho = oracle.getRho();
-        vm.expectRevert("DSROracleBase/invalid-timestamp");
+        vm.expectRevert("SSROracleBase/invalid-timestamp");
         oracle.getConversionRateLinearApprox(rho - 1);
 
         oracle.getConversionRateLinearApprox(rho);
     }
 
     function test_binomialAccuracyLongDuration() public {
-        pot.setDSR(FIVE_PCT_APY_DSR);
+        pot.setSSR(FIVE_PCT_APY_SSR);
         pot.setChi(1.03e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
@@ -229,7 +229,7 @@ contract DSRMainnetOracleTest is Test {
         rate     = bound(rate,     0, 0.5e27);   // Bound by 0-50% APR
         duration = bound(duration, 0, 30 days);  // Bound by 1 day
 
-        pot.setDSR(rate / 365 days + 1e27);
+        pot.setSSR(rate / 365 days + 1e27);
         pot.setRho(block.timestamp);
         oracle.refresh();
 

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./DSROracleXChainIntegrationBase.t.sol";
+import "./SSROracleXChainIntegrationBase.t.sol";
 
 import { AMBBridgeTesting } from "xchain-helpers/testing/bridges/AMBBridgeTesting.sol";
 import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
 
-import { DSROracleForwarderGnosis } from "src/forwarders/DSROracleForwarderGnosis.sol";
+import { SSROracleForwarderGnosis } from "src/forwarders/SSROracleForwarderGnosis.sol";
 
-contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
+contract SSROracleIntegrationGnosisTest is SSROracleXChainIntegrationBaseTest {
 
     using DomainHelpers    for *;
     using AMBBridgeTesting for *;
@@ -19,11 +19,11 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
 
         mainnet.selectFork();
 
-        forwarder = new DSROracleForwarderGnosis(address(pot), vm.computeCreateAddress(address(this), 3));
+        forwarder = new SSROracleForwarderGnosis(address(susds), vm.computeCreateAddress(address(this), 3));
 
         remote.selectFork();
 
-        oracle = new DSRAuthOracle();
+        oracle = new SSRAuthOracle();
         AMBReceiver receiver = new AMBReceiver(
             AMBBridgeTesting.getGnosisMessengerFromChainAlias(bridge.destination.chain.chainAlias),
             bytes32(uint256(1)),  // Ethereum chainid
@@ -35,14 +35,14 @@ contract DSROracleIntegrationGnosisTest is DSROracleXChainIntegrationBaseTest {
     }
 
     function test_constructor_forwarder() public {
-        DSROracleForwarderGnosis forwarder = new DSROracleForwarderGnosis(address(pot), makeAddr("receiver"));
+        SSROracleForwarderGnosis forwarder = new SSROracleForwarderGnosis(address(susds), makeAddr("receiver"));
 
-        assertEq(address(forwarder.pot()), address(pot));
+        assertEq(address(forwarder.pot()), address(susds));
         assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
     }
 
     function doRefresh() internal override {
-        DSROracleForwarderGnosis(address(forwarder)).refresh(500_000);
+        SSROracleForwarderGnosis(address(forwarder)).refresh(500_000);
     }
 
     function relayMessagesAcrossBridge() internal override {

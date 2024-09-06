@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 import { ArbitrumForwarder } from 'xchain-helpers/forwarders/ArbitrumForwarder.sol';
 
-import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
+import { SSROracleForwarderBase } from './SSROracleForwarderBase.sol';
 
-contract DSROracleForwarderArbitrum is DSROracleForwarderBase {
+contract SSROracleForwarderArbitrum is SSROracleForwarderBase {
 
     address public immutable l1CrossDomain;
 
-    constructor(address _pot, address _l2Oracle, address _l1CrossDomain) DSROracleForwarderBase(_pot, _l2Oracle) {
+    constructor(address _pot, address _l2Oracle, address _l1CrossDomain) SSROracleForwarderBase(_pot, _l2Oracle) {
         l1CrossDomain = _l1CrossDomain;
     }
 
