@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 import { OptimismForwarder } from 'xchain-helpers/forwarders/OptimismForwarder.sol';
 
-import { DSROracleForwarderBase } from './DSROracleForwarderBase.sol';
+import { SSROracleForwarderBase } from './SSROracleForwarderBase.sol';
 
-contract DSROracleForwarderOptimism is DSROracleForwarderBase {
+contract SSROracleForwarderOptimism is SSROracleForwarderBase {
 
     address public immutable l1CrossDomain;
 
-    constructor(address _pot, address _l2Oracle, address _l1CrossDomain) DSROracleForwarderBase(_pot, _l2Oracle) {
+    constructor(address _pot, address _l2Oracle, address _l1CrossDomain) SSROracleForwarderBase(_pot, _l2Oracle) {
         l1CrossDomain = _l1CrossDomain;
     }
 

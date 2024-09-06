@@ -3,23 +3,23 @@ pragma solidity ^0.8.0;
 
 import { SafeCast } from "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
 
-import { IDSRAuthOracle, IDSROracle } from '../interfaces/IDSRAuthOracle.sol';
+import { ISSRAuthOracle, ISSROracle } from '../interfaces/ISSRAuthOracle.sol';
 import { IPot }                       from '../interfaces/IPot.sol';
 
 /**
- * @title  DSROracleForwarderBase
+ * @title  SSROracleForwarderBase
  * @notice Base contract for relaying pot data messages cross-chain.
  */
-abstract contract DSROracleForwarderBase {
+abstract contract SSROracleForwarderBase {
 
     using SafeCast for uint256;
 
-    event LastSeenPotDataUpdated(IDSROracle.PotData potData);
+    event LastSeenPotDataUpdated(ISSROracle.PotData potData);
 
     IPot               public immutable pot;
     address            public immutable l2Oracle;
     
-    IDSROracle.PotData public _lastSeenPotData;
+    ISSROracle.PotData public _lastSeenPotData;
 
     constructor(address _pot, address _l2Oracle) {
         pot      = IPot(_pot);
@@ -27,25 +27,25 @@ abstract contract DSROracleForwarderBase {
     }
 
     function _packMessage() internal returns (bytes memory) {
-        IDSROracle.PotData memory potData = IDSROracle.PotData({
-            dsr: pot.dsr().toUint96(),
+        ISSROracle.PotData memory potData = ISSROracle.PotData({
+            ssr: pot.ssr().toUint96(),
             chi: pot.chi().toUint120(),
             rho: pot.rho().toUint40()
         });
         _lastSeenPotData = potData;
         emit LastSeenPotDataUpdated(potData);
         return abi.encodeCall(
-            IDSRAuthOracle.setPotData,
+            ISSRAuthOracle.setPotData,
             (potData)
         );
     }
 
-    function getLastSeenPotData() external view returns (IDSROracle.PotData memory) {
+    function getLastSeenPotData() external view returns (ISSROracle.PotData memory) {
         return _lastSeenPotData;
     }
 
-    function getLastSeenDSR() external view returns (uint256) {
-        return _lastSeenPotData.dsr;
+    function getLastSeenSSR() external view returns (uint256) {
+        return _lastSeenPotData.ssr;
     }
 
     function getLastSeenChi() external view returns (uint256) {

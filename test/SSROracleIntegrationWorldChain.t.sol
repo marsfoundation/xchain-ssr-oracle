@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "./DSROracleXChainIntegrationBase.t.sol";
+import "./SSROracleXChainIntegrationBase.t.sol";
 
 import { OptimismBridgeTesting } from "xchain-helpers/testing/bridges/OptimismBridgeTesting.sol";
 import { OptimismReceiver }      from "xchain-helpers/receivers/OptimismReceiver.sol";
 
-import { DSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/DSROracleForwarderOptimism.sol";
+import { SSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/SSROracleForwarderOptimism.sol";
 
-contract DSROracleIntegrationWorldChainTest is DSROracleXChainIntegrationBaseTest {
+contract SSROracleIntegrationWorldChainTest is SSROracleXChainIntegrationBaseTest {
 
     using DomainHelpers         for *;
     using OptimismBridgeTesting for *;
@@ -25,11 +25,11 @@ contract DSROracleIntegrationWorldChainTest is DSROracleXChainIntegrationBaseTes
         mainnet.selectFork();
 
         address expectedReceiver = vm.computeCreateAddress(address(this), 3);
-        forwarder = new DSROracleForwarderOptimism(address(pot), expectedReceiver, OptimismForwarder.L1_CROSS_DOMAIN_WORLD_CHAIN);
+        forwarder = new SSROracleForwarderOptimism(address(susds), expectedReceiver, OptimismForwarder.L1_CROSS_DOMAIN_WORLD_CHAIN);
 
         remote.selectFork();
 
-        oracle = new DSRAuthOracle();
+        oracle = new SSRAuthOracle();
         OptimismReceiver receiver = new OptimismReceiver(address(forwarder), address(oracle));
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(receiver));
 
@@ -37,7 +37,7 @@ contract DSROracleIntegrationWorldChainTest is DSROracleXChainIntegrationBaseTes
     }
 
     function doRefresh() internal override {
-        DSROracleForwarderOptimism(address(forwarder)).refresh(500_000);
+        SSROracleForwarderOptimism(address(forwarder)).refresh(500_000);
     }
 
     function relayMessagesAcrossBridge() internal override {
