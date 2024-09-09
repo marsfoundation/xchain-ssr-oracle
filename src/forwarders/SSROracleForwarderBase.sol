@@ -4,56 +4,56 @@ pragma solidity ^0.8.0;
 import { SafeCast } from "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
 
 import { ISSRAuthOracle, ISSROracle } from '../interfaces/ISSRAuthOracle.sol';
-import { IPot }                       from '../interfaces/IPot.sol';
+import { ISUSDS }                     from '../interfaces/ISUSDS.sol';
 
 /**
  * @title  SSROracleForwarderBase
- * @notice Base contract for relaying pot data messages cross-chain.
+ * @notice Base contract for relaying sUSDS data messages cross-chain.
  */
 abstract contract SSROracleForwarderBase {
 
     using SafeCast for uint256;
 
-    event LastSeenPotDataUpdated(ISSROracle.PotData potData);
+    event LastSeenSUSDSDataUpdated(ISSROracle.SUSDSData susdsData);
 
-    IPot               public immutable pot;
+    ISUSDS             public immutable susds;
     address            public immutable l2Oracle;
     
-    ISSROracle.PotData public _lastSeenPotData;
+    ISSROracle.SUSDSData public _lastSeenSUSDSData;
 
-    constructor(address _pot, address _l2Oracle) {
-        pot      = IPot(_pot);
+    constructor(address _susds, address _l2Oracle) {
+        susds    = ISUSDS(_susds);
         l2Oracle = _l2Oracle;
     }
 
     function _packMessage() internal returns (bytes memory) {
-        ISSROracle.PotData memory potData = ISSROracle.PotData({
-            ssr: pot.ssr().toUint96(),
-            chi: pot.chi().toUint120(),
-            rho: pot.rho().toUint40()
+        ISSROracle.SUSDSData memory susdsData = ISSROracle.SUSDSData({
+            ssr: susds.ssr().toUint96(),
+            chi: uint256(susds.chi()).toUint120(),
+            rho: uint256(susds.rho()).toUint40()
         });
-        _lastSeenPotData = potData;
-        emit LastSeenPotDataUpdated(potData);
+        _lastSeenSUSDSData = susdsData;
+        emit LastSeenSUSDSDataUpdated(susdsData);
         return abi.encodeCall(
-            ISSRAuthOracle.setPotData,
-            (potData)
+            ISSRAuthOracle.setSUSDSData,
+            (susdsData)
         );
     }
 
-    function getLastSeenPotData() external view returns (ISSROracle.PotData memory) {
-        return _lastSeenPotData;
+    function getLastSeenSUSDSData() external view returns (ISSROracle.SUSDSData memory) {
+        return _lastSeenSUSDSData;
     }
 
     function getLastSeenSSR() external view returns (uint256) {
-        return _lastSeenPotData.ssr;
+        return _lastSeenSUSDSData.ssr;
     }
 
     function getLastSeenChi() external view returns (uint256) {
-        return _lastSeenPotData.chi;
+        return _lastSeenSUSDSData.chi;
     }
 
     function getLastSeenRho() external view returns (uint256) {
-        return _lastSeenPotData.rho;
+        return _lastSeenSUSDSData.rho;
     }
 
 }

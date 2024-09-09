@@ -37,8 +37,8 @@ contract SSROracleIntegrationGnosisTest is SSROracleXChainIntegrationBaseTest {
     function test_constructor_forwarder() public {
         SSROracleForwarderGnosis forwarder = new SSROracleForwarderGnosis(address(susds), makeAddr("receiver"));
 
-        assertEq(address(forwarder.pot()), address(susds));
-        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
+        assertEq(address(forwarder.susds()), address(susds));
+        assertEq(forwarder.l2Oracle(),       makeAddr("receiver"));
     }
 
     function doRefresh() internal override {

@@ -23,7 +23,7 @@ contract SSRAuthOracleTest is Test {
 
         // Feed initial data and set limits
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(this));
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27),
             rho: uint40(block.timestamp)
@@ -65,116 +65,116 @@ contract SSRAuthOracleTest is Test {
         oracle.setMaxSSR(RAY);
     }
 
-    function test_setPotData_rho_decreasing_boundary() public {
+    function test_setSUSDSData_rho_decreasing_boundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("SSRAuthOracle/invalid-rho");
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27),
             rho: uint40(rho - 1)
         }));
 
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27),
             rho: uint40(rho)
         }));
     }
 
-    function test_setPotData_rho_in_future_boundary() public {
+    function test_setSUSDSData_rho_in_future_boundary() public {
         vm.expectRevert("SSRAuthOracle/invalid-rho");
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp + 1)
         }));
 
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
     }
 
-    function test_setPotData_ssr_below_zero_boundary() public {
+    function test_setSUSDSData_ssr_below_zero_boundary() public {
         vm.expectRevert("SSRAuthOracle/invalid-ssr");
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(1e27 - 1),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
 
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(1e27),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
     }
 
-    function test_setPotData_ssr_above_max_boundary() public {
+    function test_setSUSDSData_ssr_above_max_boundary() public {
         oracle.setMaxSSR(ONE_HUNDRED_PCT_APY_SSR);
 
         vm.expectRevert("SSRAuthOracle/invalid-ssr");
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(ONE_HUNDRED_PCT_APY_SSR + 1),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
 
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(ONE_HUNDRED_PCT_APY_SSR),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
     }
 
-    function test_setPotData_very_high_ssr_no_max() public {
+    function test_setSUSDSData_very_high_ssr_no_max() public {
         // Set the SSR to be a very high number (Doubling every second)
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(2e27),
             chi: uint120(1.03e27),
             rho: uint40(block.timestamp)
         }));
     }
 
-    function test_setPotData_chi_decreasing_boundary() public {
+    function test_setSUSDSData_chi_decreasing_boundary() public {
         vm.expectRevert("SSRAuthOracle/invalid-chi");
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27 - 1),
             rho: uint40(block.timestamp)
         }));
 
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27),
             rho: uint40(block.timestamp)
         }));
     }
 
-    function test_setPotData_chi_growth_too_fast_boundary() public {
+    function test_setSUSDSData_chi_growth_too_fast_boundary() public {
         oracle.setMaxSSR(ONE_HUNDRED_PCT_APY_SSR);
 
         uint256 chiMax = _rpow(ONE_HUNDRED_PCT_APY_SSR, 365 days);
         assertEq(chiMax, 1.999999999999999999505617035e27);  // Max APY is 100% so ~2x return in 1 year is highest
 
         vm.expectRevert("SSRAuthOracle/invalid-chi");
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(chiMax + 1),
             rho: uint40(block.timestamp)
         }));
 
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(chiMax),
             rho: uint40(block.timestamp)
         }));
     }
 
-    function test_setPotData_chi_large_growth_no_max_ssr() public {
+    function test_setSUSDSData_chi_large_growth_no_max_ssr() public {
         // A 100,000x return in 1 year is fine with no upper ssr limit
-        oracle.setPotData(ISSROracle.PotData({
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(100000e27),
             rho: uint40(block.timestamp)

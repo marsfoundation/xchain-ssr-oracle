@@ -12,15 +12,15 @@ import { SSRAuthOracle  }                  from "../src/SSRAuthOracle.sol";
 import { SSROracleForwarderBase  }         from "../src/forwarders/SSROracleForwarderBase.sol";
 import { SSRBalancerRateProviderAdapter  } from "../src/adapters/SSRBalancerRateProviderAdapter.sol";
 import { ISSROracle }                      from "../src/interfaces/ISSROracle.sol";
-import { IPot }                            from "../src/interfaces/IPot.sol";
+import { ISUSDS }                          from "../src/interfaces/ISUSDS.sol";
 
-interface IPotDripLike {
+interface ISUSDSDripLike {
     function drip() external;
 }
 
 abstract contract SSROracleXChainIntegrationBaseTest is Test {
 
-    event LastSeenPotDataUpdated(ISSROracle.PotData potData);
+    event LastSeenSUSDSDataUpdated(ISSROracle.SUSDSData susdsData);
 
     using DomainHelpers for *;
 
@@ -44,9 +44,9 @@ abstract contract SSROracleXChainIntegrationBaseTest is Test {
     function setUp() public {
         mainnet = getChain("mainnet").createSelectFork(20692134);  // Sept 6, 2024
 
-        assertEq(IPot(susds).ssr(), CURR_SSR);
-        assertEq(IPot(susds).chi(), CURR_CHI);
-        assertEq(IPot(susds).rho(), CURR_RHO);
+        assertEq(ISUSDS(susds).ssr(), CURR_SSR);
+        assertEq(ISUSDS(susds).chi(), CURR_CHI);
+        assertEq(ISUSDS(susds).rho(), CURR_RHO);
 
         setupDomain();
 
@@ -74,7 +74,7 @@ abstract contract SSROracleXChainIntegrationBaseTest is Test {
         uint256 susdsConversionRate = IERC4626(susds).convertToAssets(1e18);
         assertEq(susdsConversionRate, 1e18);
 
-        ISSROracle.PotData memory data = forwarder.getLastSeenPotData();
+        ISSROracle.SUSDSData memory data = forwarder.getLastSeenSUSDSData();
         assertEq(data.ssr,                   0);
         assertEq(data.chi,                   0);
         assertEq(data.rho,                   0);
@@ -83,14 +83,14 @@ abstract contract SSROracleXChainIntegrationBaseTest is Test {
         assertEq(forwarder.getLastSeenRho(), 0);
 
         vm.expectEmit(address(forwarder));
-        emit LastSeenPotDataUpdated(ISSROracle.PotData({
+        emit LastSeenSUSDSDataUpdated(ISSROracle.SUSDSData({
             ssr: uint96(CURR_SSR),
             chi: uint120(CURR_CHI),
             rho: uint40(CURR_RHO)
         }));
         doRefresh();
 
-        data = forwarder.getLastSeenPotData();
+        data = forwarder.getLastSeenSUSDSData();
         assertEq(data.ssr,                   CURR_SSR);
         assertEq(data.chi,                   CURR_CHI);
         assertEq(data.rho,                   CURR_RHO);

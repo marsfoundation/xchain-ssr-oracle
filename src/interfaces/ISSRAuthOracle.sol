@@ -32,10 +32,10 @@ interface ISSRAuthOracle is ISSROracle {
     function setMaxSSR(uint256 maxSSR) external;
 
     /**
-     * @notice Update the pot data.
+     * @notice Update the sUSDS data.
      * @param  data The max ssr.
      * @dev    Only callable by the data provider role.
      */
-    function setPotData(ISSROracle.PotData calldata data) external;
+    function setSUSDSData(ISSROracle.SUSDSData calldata data) external;
 
 }

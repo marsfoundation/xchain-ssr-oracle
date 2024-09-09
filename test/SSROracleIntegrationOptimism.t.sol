@@ -34,8 +34,8 @@ contract SSROracleIntegrationOptimismTest is SSROracleXChainIntegrationBaseTest 
     function test_constructor_forwarder() public {
         SSROracleForwarderOptimism forwarder = new SSROracleForwarderOptimism(address(susds), makeAddr("receiver"), OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM);
 
-        assertEq(address(forwarder.pot()), address(susds));
-        assertEq(forwarder.l2Oracle(),     makeAddr("receiver"));
+        assertEq(address(forwarder.susds()), address(susds));
+        assertEq(forwarder.l2Oracle(),       makeAddr("receiver"));
     }
 
     function doRefresh() internal override {

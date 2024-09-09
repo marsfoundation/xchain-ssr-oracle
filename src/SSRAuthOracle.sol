@@ -8,7 +8,7 @@ import { ISSRAuthOracle }            from './interfaces/ISSRAuthOracle.sol';
 
 /**
  * @title  SSRAuthOracle
- * @notice SSR Oracle that allows permissioned setting of the pot data.
+ * @notice SSR Oracle that allows permissioned setting of the sUSDS data.
  */
 contract SSRAuthOracle is AccessControl, SSROracleBase, ISSRAuthOracle {
 
@@ -29,8 +29,8 @@ contract SSRAuthOracle is AccessControl, SSROracleBase, ISSRAuthOracle {
         emit SetMaxSSR(_maxSSR);
     }
 
-    function setPotData(ISSROracle.PotData calldata nextData) external onlyRole(DATA_PROVIDER_ROLE) {
-        ISSROracle.PotData memory previousData = _data;
+    function setSUSDSData(ISSROracle.SUSDSData calldata nextData) external onlyRole(DATA_PROVIDER_ROLE) {
+        ISSROracle.SUSDSData memory previousData = _data;
 
         // Timestamp must be in the past
         require(nextData.rho <= block.timestamp, 'SSRAuthOracle/invalid-rho');
@@ -47,7 +47,7 @@ contract SSRAuthOracle is AccessControl, SSROracleBase, ISSRAuthOracle {
         if (_data.rho == 0) {
             // This is a first update
             // No need to run checks
-            _setPotData(nextData);
+            _setSUSDSData(nextData);
             return;
         }
 
@@ -66,7 +66,7 @@ contract SSRAuthOracle is AccessControl, SSROracleBase, ISSRAuthOracle {
             require(nextData.chi <= chiMax, 'SSRAuthOracle/invalid-chi');
         }
 
-        _setPotData(nextData);
+        _setSUSDSData(nextData);
     }
 
 }

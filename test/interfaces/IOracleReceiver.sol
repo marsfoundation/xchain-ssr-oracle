@@ -4,5 +4,5 @@ pragma solidity ^0.8.0;
 import { ISSROracle } from 'src/interfaces/ISSRAuthOracle.sol';
 
 interface IOracleReceiver {
-    function setPotData(ISSROracle.PotData calldata data) external;
+    function setSUSDSData(ISSROracle.SUSDSData calldata data) external;
 }

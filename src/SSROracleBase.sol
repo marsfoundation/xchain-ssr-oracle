@@ -11,15 +11,15 @@ abstract contract SSROracleBase is ISSROracle {
 
     uint256 private constant RAY = 1e27;
 
-    ISSROracle.PotData internal _data;
+    ISSROracle.SUSDSData internal _data;
 
-    function _setPotData(ISSROracle.PotData memory nextData) internal {
+    function _setSUSDSData(ISSROracle.SUSDSData memory nextData) internal {
         _data = nextData;
 
-        emit SetPotData(nextData);
+        emit SetSUSDSData(nextData);
     }
 
-    function getPotData() external override view returns (ISSROracle.PotData memory) {
+    function getSUSDSData() external override view returns (ISSROracle.SUSDSData memory) {
         return _data;
     }
 
@@ -46,7 +46,7 @@ abstract contract SSROracleBase is ISSROracle {
     }
 
     function getConversionRate(uint256 timestamp) public override view returns (uint256) {
-        ISSROracle.PotData memory d = _data;
+        ISSROracle.SUSDSData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
         require(timestamp > rho, "SSROracleBase/invalid-timestamp");
@@ -64,7 +64,7 @@ abstract contract SSROracleBase is ISSROracle {
 
     // Copied and slightly modified from https://github.com/aave/aave-v3-core/blob/42103522764546a4eeb856b741214fa5532be52a/contracts/protocol/libraries/math/MathUtils.sol#L50
     function getConversionRateBinomialApprox(uint256 timestamp) public override view returns (uint256) {
-        ISSROracle.PotData memory d = _data;
+        ISSROracle.SUSDSData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
         require(timestamp > rho, "SSROracleBase/invalid-timestamp");
@@ -106,7 +106,7 @@ abstract contract SSROracleBase is ISSROracle {
     }
 
     function getConversionRateLinearApprox(uint256 timestamp) public override view returns (uint256) {
-        ISSROracle.PotData memory d = _data;
+        ISSROracle.SUSDSData memory d = _data;
         uint256 rho = d.rho;
         if (timestamp == rho) return d.chi;
         require(timestamp > rho, "SSROracleBase/invalid-timestamp");
