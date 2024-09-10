@@ -7,23 +7,23 @@ pragma solidity >=0.8.0;
  */
 interface ISSROracle {
 
-    struct PotData {
+    struct SUSDSData {
         uint96  ssr;  // Sky Savings Rate in per-second value [ray]
         uint120 chi;  // Last computed conversion rate [ray]
         uint40  rho;  // Last computed timestamp [seconds]
     }
 
     /**
-     * @notice Emitted when the PotData is updated.
-     * @param  nextData The new PotData struct.
+     * @notice Emitted when the SUSDSData is updated.
+     * @param  nextData The new SUSDSData struct.
      */
-    event SetPotData(PotData nextData);
+    event SetSUSDSData(SUSDSData nextData);
 
     /**
-     * @notice Retrieve the current PotData: ssr, chi, and rho.
-     * @return The current PotData struct.
+     * @notice Retrieve the current SUSDSData: ssr, chi, and rho.
+     * @return The current SUSDSData struct.
      */
-    function getPotData() external view returns (PotData memory);
+    function getSUSDSData() external view returns (SUSDSData memory);
 
     /**
      * @notice Get the current Sky Savings Rate.

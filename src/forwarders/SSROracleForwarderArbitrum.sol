@@ -9,7 +9,7 @@ contract SSROracleForwarderArbitrum is SSROracleForwarderBase {
 
     address public immutable l1CrossDomain;
 
-    constructor(address _pot, address _l2Oracle, address _l1CrossDomain) SSROracleForwarderBase(_pot, _l2Oracle) {
+    constructor(address _susds, address _l2Oracle, address _l1CrossDomain) SSROracleForwarderBase(_susds, _l2Oracle) {
         l1CrossDomain = _l1CrossDomain;
     }
 

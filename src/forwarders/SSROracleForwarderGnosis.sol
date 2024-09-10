@@ -7,7 +7,7 @@ import { SSROracleForwarderBase } from './SSROracleForwarderBase.sol';
 
 contract SSROracleForwarderGnosis is SSROracleForwarderBase {
 
-    constructor(address _pot, address _l2Oracle) SSROracleForwarderBase(_pot, _l2Oracle) {
+    constructor(address _susds, address _l2Oracle) SSROracleForwarderBase(_susds, _l2Oracle) {
         // Intentionally left blank
     }
 

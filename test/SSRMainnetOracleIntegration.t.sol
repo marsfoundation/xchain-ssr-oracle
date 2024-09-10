@@ -5,9 +5,9 @@ import "forge-std/Test.sol";
 
 import { DomainHelpers } from "xchain-helpers/testing/Domain.sol";
 
-import { SSRMainnetOracle, IPot } from "../src/SSRMainnetOracle.sol";
+import { SSRMainnetOracle, ISUSDS } from "../src/SSRMainnetOracle.sol";
 
-interface ISUSDSLike is IPot {
+interface ISUSDSLike is ISUSDS {
     function drip() external;
     function file(bytes32 what, uint256 data) external;
 }

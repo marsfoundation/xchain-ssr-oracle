@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { IPot } from './interfaces/IPot.sol';
+import { ISUSDS } from './interfaces/ISUSDS.sol';
 
 import { SSROracleBase, ISSROracle } from './SSROracleBase.sol';
 
@@ -11,10 +11,10 @@ import { SSROracleBase, ISSROracle } from './SSROracleBase.sol';
  */
 contract SSRMainnetOracle is SSROracleBase {
 
-    IPot public immutable pot;
+    ISUSDS public immutable susds;
 
-    constructor(address _pot) {
-        pot = IPot(_pot);
+    constructor(address _susds) {
+        susds = ISUSDS(_susds);
 
         refresh();
     }
@@ -25,10 +25,10 @@ contract SSRMainnetOracle is SSROracleBase {
     *         `refresh()` should be called immediately whenever the `ssr` value changes.
     */
     function refresh() public {
-        _setPotData(ISSROracle.PotData({
-            ssr: uint96(pot.ssr()),
-            chi: uint120(pot.chi()),
-            rho: uint40(pot.rho())
+        _setSUSDSData(ISSROracle.SUSDSData({
+            ssr: uint96(susds.ssr()),
+            chi: uint120(susds.chi()),
+            rho: uint40(susds.rho())
         }));
     }
 
