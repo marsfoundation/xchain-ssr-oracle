@@ -16,8 +16,8 @@ abstract contract SSROracleForwarderBase {
 
     event LastSeenSUSDSDataUpdated(ISSROracle.SUSDSData susdsData);
 
-    ISUSDS             public immutable susds;
-    address            public immutable l2Oracle;
+    ISUSDS  public immutable susds;
+    address public immutable l2Oracle;
     
     ISSROracle.SUSDSData public _lastSeenSUSDSData;
 
