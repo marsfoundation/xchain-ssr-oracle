@@ -1,16 +1,16 @@
 # XChain SSR Oracle
 
-Reports the Sky Savings Rate (SSR) values across various bridges. This is primarily used as an exchange rate between USDS (USD) and sUSDS for use by DEXs+PSMs in capital efficiency liquidity amplification. Provided the three pot values (`ssr`, `chi` and `rho`) are synced you can extrapolate an exact exchange rate to any point in the future for as long as the `ssr` value does not get updated on mainnet. Because this oracle does not need to be synced unless the `ssr` changes, it can use the chain's canonical bridge for maximum security.
+Reports the Sky Savings Rate (SSR) values across various bridges. This is primarily used as an exchange rate between USDS (USD) and sUSDS for use by DEXs+PSMs in capital efficiency liquidity amplification. Provided the three sUSDS values (`ssr`, `chi` and `rho`) are synced you can extrapolate an exact exchange rate to any point in the future for as long as the `ssr` value does not get updated on mainnet. Because this oracle does not need to be synced unless the `ssr` changes, it can use the chain's canonical bridge for maximum security.
 
 ## Contracts
 
 ### SSROracleBase
 
-Common functionality shared between the Mainnet and XChain instances of the oracle. Contains convenience functions to fetch the conversion rate at various levels of precision trading off gas efficiency. Pot data is compressed into a single word to save SLOAD gas cost.
+Common functionality shared between the Mainnet and XChain instances of the oracle. Contains convenience functions to fetch the conversion rate at various levels of precision trading off gas efficiency. sUSDS data is compressed into a single word to save SLOAD gas cost.
 
 ### SSRMainnetOracle
 
-Mainnet instance pulls data directly from the `pot` as it is on the same chain. It's not clear the use case for this beyond consistency and some gas savings, but it was included none-the-less.
+Mainnet instance pulls data directly from the `sUSDS` as it is on the same chain. It's not clear the use case for this beyond consistency and some gas savings, but it was included none-the-less.
 
 ### SSRAuthOracle
 
@@ -18,7 +18,7 @@ Oracle receives data from an authorized data provider. This is intended to be on
 
 ### Forwarders + Receivers
 
-These are bridge-specific messaging contracts. Forwarders permissionlessly relay `pot` data. Receivers decode this message and forward it to the `SSRAuthOracle`. Please note that receivers are generic and part of the `xchain-helpers` repository.
+These are bridge-specific messaging contracts. Forwarders permissionlessly relay `sUSDS` data. Receivers decode this message and forward it to the `SSRAuthOracle`. Please note that receivers are generic and part of the `xchain-helpers` repository.
 
 ## Supported Chains
 
