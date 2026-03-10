@@ -3,7 +3,8 @@
 	url = https://github.com/foundry-rs/forge-std
 [submodule "lib/xchain-helpers"]
 	path = lib/xchain-helpers
-	url = https://github.com/marsfoundation/xchain-helpers
+	url = https://github.com/oldchili/xchain-helpers
+	branch = lz-gov-bridge
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
