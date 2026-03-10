@@ -5,9 +5,9 @@ import { SafeCast } from "openzeppelin-contracts/contracts/utils/math/SafeCast.s
 
 import { ISSRAuthOracle, ISSROracle } from '../interfaces/ISSRAuthOracle.sol';
 import { SSROracleForwarderBase } from './SSROracleForwarderBase.sol';
-import { LzGovBridgeForwarder, MessagingFee, MessagingReceipt } from 'xchain-helpers/forwarders/LzGovBridgeForwarder.sol';
+import { LZGovBridgeForwarder, MessagingFee, MessagingReceipt } from 'xchain-helpers/forwarders/LZGovBridgeForwarder.sol';
 
-contract SSROracleForwarderLzGovBridge is SSROracleForwarderBase {
+contract SSROracleForwarderLZGovBridge is SSROracleForwarderBase {
 
     using SafeCast for uint256;
 
@@ -25,27 +25,30 @@ contract SSROracleForwarderLzGovBridge is SSROracleForwarderBase {
     }
 
     function quote(bytes calldata extraOptions) external view returns (MessagingFee memory) {
-        return LzGovBridgeForwarder.quote({
-            govOapp:      govOapp,
-            dstEid:       dstEid,
-            dstTarget:    l2Oracle,
-            message:      abi.encodeCall(ISSRAuthOracle.setSUSDSData, (ISSROracle.SUSDSData({
+        return LZGovBridgeForwarder.quote({
+            govOapp:       govOapp,
+            dstEid:        dstEid,
+            dstTarget:     l2Oracle,
+            message:       abi.encodeCall(ISSRAuthOracle.setSUSDSData, (ISSROracle.SUSDSData({
                 ssr: susds.ssr().toUint96(),
                 chi: uint256(susds.chi()).toUint120(),
                 rho: uint256(susds.rho()).toUint40()
             }))),
-            extraOptions: extraOptions
+            extraOptions:  extraOptions,
+            payInLzToken:  false
         });
     }
 
     function refresh(bytes calldata extraOptions) public payable returns (MessagingReceipt memory) {
-        return LzGovBridgeForwarder.sendMessage({
+        return LZGovBridgeForwarder.sendMessage({
             govOapp:       govOapp,
             dstEid:        dstEid,
             dstTarget:     l2Oracle,
             message:       _packMessage(),
             extraOptions:  extraOptions,
-            refundAddress: msg.sender
+            refundAddress: msg.sender,
+            fee:           MessagingFee({ nativeFee: msg.value, lzTokenFee: 0 }),
+            lzToken:       address(0)
         });
     }
 
