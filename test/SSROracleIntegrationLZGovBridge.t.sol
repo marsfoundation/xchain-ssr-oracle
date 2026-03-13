@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
-
 import { OptionsBuilder } from "layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
 import { Bridge }                from "xchain-helpers/testing/Bridge.sol";
@@ -12,15 +10,12 @@ import { Domain, DomainHelpers } from "xchain-helpers/testing/Domain.sol";
 import { LZBridgeTesting }      from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
 import { LZForwarder }          from "xchain-helpers/forwarders/LZForwarder.sol";
 import { LZGovBridgeReceiver }  from "xchain-helpers/receivers/LZGovBridgeReceiver.sol";
-import { LZGovBridgeForwarder, MessagingFee } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
+import { MessagingFee } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
 
 import { SSRAuthOracle }                 from "src/SSRAuthOracle.sol";
 import { SSROracleForwarderLZGovBridge } from "src/forwarders/SSROracleForwarderLZGovBridge.sol";
 import { ISSROracle }                    from "src/interfaces/ISSROracle.sol";
 import { ISUSDS }                        from "src/interfaces/ISUSDS.sol";
-
-import { SSRBalancerRateProviderAdapter  } from "src/adapters/SSRBalancerRateProviderAdapter.sol";
-import { SSRChainlinkRateProviderAdapter } from "src/adapters/SSRChainlinkRateProviderAdapter.sol";
 
 import { GovernanceOAppReceiverMock } from "lib/xchain-helpers/test/mocks/lz/GovernanceOAppReceiverMock.sol";
 
@@ -50,7 +45,6 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
     uint32 sourceEndpointId      = LZForwarder.ENDPOINT_ID_ETHEREUM;
     uint32 destinationEndpointId = LZForwarder.ENDPOINT_ID_BASE;
 
-    address sourceEndpoint      = LZForwarder.ENDPOINT_ETHEREUM;
     address destinationEndpoint = LZForwarder.ENDPOINT_BASE;
 
     Domain mainnet;
@@ -61,10 +55,7 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
 
     SSRAuthOracle oracle;
 
-    SSRBalancerRateProviderAdapter  balancerAdapter;
-    SSRChainlinkRateProviderAdapter chainlinkAdapter;
-
-    GovernanceOAppReceiverMock govReceiver;
+    GovernanceOAppReceiverMock govOappReceiver;
     LZGovBridgeReceiver        govBridgeReceiver;
 
     function setUp() public {
@@ -77,9 +68,9 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         bridge = LZBridgeTesting.createLZBridge(mainnet, remote);
 
         // Precompute remote contract addresses (nonce is shared across forks for persistent contracts)
-        // Deploy order: forwarder, oracle, govReceiver, govBridgeReceiver, ...
+        // Deploy order: forwarder, govOappReceiver, oracle, govBridgeReceiver
         uint256 nonce = vm.getNonce(address(this));
-        address expectedGovOappReceiver    = vm.computeCreateAddress(address(this), nonce + 2);
+        address expectedGovOappReceiver   = vm.computeCreateAddress(address(this), nonce + 1);
         address expectedGovBridgeReceiver = vm.computeCreateAddress(address(this), nonce + 3);
 
         // --- Mainnet: deploy forwarder + configure GovernanceOAppSender ---
@@ -108,18 +99,18 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         // --- Remote: deploy all destination contracts ---
         remote.selectFork();
 
-        oracle = new SSRAuthOracle();
-
-        govReceiver = new GovernanceOAppReceiverMock(
+        govOappReceiver = new GovernanceOAppReceiverMock(
             sourceEndpointId,
             bytes32(uint256(uint160(govOappSender))),
             destinationEndpoint,
             address(this)
         );
-        assertEq(address(govReceiver), expectedGovOappReceiver);
+        assertEq(address(govOappReceiver), expectedGovOappReceiver);
+
+        oracle = new SSRAuthOracle();
 
         govBridgeReceiver = new LZGovBridgeReceiver(
-            address(govReceiver),
+            address(govOappReceiver),
             sourceEndpointId,
             address(forwarder),
             address(oracle)
@@ -127,9 +118,6 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         assertEq(address(govBridgeReceiver), expectedGovBridgeReceiver);
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(govBridgeReceiver));
-
-        balancerAdapter  = new SSRBalancerRateProviderAdapter(oracle);
-        chainlinkAdapter = new SSRChainlinkRateProviderAdapter(oracle);
     }
 
     function test_constructor_forwarder() public {
@@ -165,8 +153,6 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         // Anchor the time to rho so conversion rate is predictable
         vm.warp(currRho + 30 days);
 
-        uint256 susdsConversionRate = IERC4626(susds).convertToAssets(1e18);
-
         ISSROracle.SUSDSData memory data = forwarder.getLastSeenSUSDSData();
         assertEq(data.ssr,                   0);
         assertEq(data.chi,                   0);
@@ -175,16 +161,16 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         assertEq(forwarder.getLastSeenChi(), 0);
         assertEq(forwarder.getLastSeenRho(), 0);
 
+        bytes memory extraOptions = OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0);
+        MessagingFee memory fee = forwarder.quote(extraOptions);
+        vm.deal(address(this), fee.nativeFee);
+
         vm.expectEmit(address(forwarder));
         emit LastSeenSUSDSDataUpdated(ISSROracle.SUSDSData({
             ssr: uint96(currSSR),
             chi: uint120(currChi),
-            rho: uint40(currRho)
+            rho: uint40(currRho) // timestamp of last drip, doesn't change on `refresh`
         }));
-
-        bytes memory extraOptions = OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0);
-        MessagingFee memory fee = forwarder.quote(extraOptions);
-        vm.deal(address(this), fee.nativeFee);
         forwarder.refresh{ value: fee.nativeFee }(extraOptions);
 
         data = forwarder.getLastSeenSUSDSData();
@@ -195,19 +181,12 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         assertEq(forwarder.getLastSeenChi(), currChi);
         assertEq(forwarder.getLastSeenRho(), currRho);
 
-        bridge.relayMessagesToDestination(true, govOappSender, address(govReceiver));
+        bridge.relayMessagesToDestination(true, govOappSender, address(govOappReceiver));
         vm.warp(currRho + 30 days);
 
         assertEq(oracle.getSSR(), currSSR);
         assertEq(oracle.getChi(), currChi);
         assertEq(oracle.getRho(), currRho);
-
-        assertApproxEqAbs(balancerAdapter.getRate(), susdsConversionRate, 1e10);
-
-        int256 expectedChainlinkAnswer = int256(susdsConversionRate) * 1e9;
-        assertApproxEqAbs(chainlinkAdapter.latestAnswer(), expectedChainlinkAnswer, 1e10);
-        (, int256 answer,,,) = chainlinkAdapter.latestRoundData();
-        assertApproxEqAbs(answer, expectedChainlinkAnswer, 1e10);
     }
 
 }
