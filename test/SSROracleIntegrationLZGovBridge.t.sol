@@ -23,6 +23,10 @@ interface IChainLog {
     function getAddress(bytes32) external view returns (address);
 }
 
+interface ISUSDS4626 {
+    function convertToAssets(uint256 shares) external view returns (uint256);
+}
+
 interface IGovOappSender {
     function owner() external view returns (address);
     function setPeer(uint32 _eid, bytes32 _peer) external;
@@ -61,40 +65,14 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
     function setUp() public {
         mainnet = getChain("mainnet").createSelectFork();
 
-        susds          = chainlog.getAddress("SUSDS");
+        susds         = chainlog.getAddress("SUSDS");
         govOappSender = chainlog.getAddress("LZ_GOV_SENDER");
 
         remote = getChain("base").createFork();
         bridge = LZBridgeTesting.createLZBridge(mainnet, remote);
 
-        // Precompute remote contract addresses (nonce is shared across forks for persistent contracts)
-        // Deploy order: forwarder, govOappReceiver, oracle, govBridgeReceiver
-        uint256 nonce = vm.getNonce(address(this));
-        address expectedGovOappReceiver   = vm.computeCreateAddress(address(this), nonce + 1);
-        address expectedGovBridgeReceiver = vm.computeCreateAddress(address(this), nonce + 3);
-
-        // --- Mainnet: deploy forwarder + configure GovernanceOAppSender ---
-
-        forwarder = new SSROracleForwarderLZGovBridge(
-            susds,
-            expectedGovBridgeReceiver,
-            govOappSender,
-            destinationEndpointId
-        );
-
-        address govOwner = IGovOappSender(govOappSender).owner();
-        vm.startPrank(govOwner);
-        IGovOappSender(govOappSender).setPeer(
-            destinationEndpointId,
-            bytes32(uint256(uint160(expectedGovOappReceiver)))
-        );
-        IGovOappSender(govOappSender).setCanCallTarget(
-            address(forwarder),
-            destinationEndpointId,
-            bytes32(uint256(uint160(expectedGovBridgeReceiver))),
-            true
-        );
-        vm.stopPrank();
+        // Precompute forwarder address (nonce is shared across forks for persistent contracts)
+        address expectedForwarder = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 3);
 
         // --- Remote: deploy all destination contracts ---
         remote.selectFork();
@@ -105,19 +83,42 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
             destinationEndpoint,
             address(this)
         );
-        assertEq(address(govOappReceiver), expectedGovOappReceiver);
 
         oracle = new SSRAuthOracle();
 
         govBridgeReceiver = new LZGovBridgeReceiver(
             address(govOappReceiver),
             sourceEndpointId,
-            address(forwarder),
+            expectedForwarder,
             address(oracle)
         );
-        assertEq(address(govBridgeReceiver), expectedGovBridgeReceiver);
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(govBridgeReceiver));
+
+        // --- Mainnet: deploy forwarder + configure GovernanceOAppSender ---
+        mainnet.selectFork();
+
+        forwarder = new SSROracleForwarderLZGovBridge(
+            susds,
+            address(govBridgeReceiver),
+            govOappSender,
+            destinationEndpointId
+        );
+        assertEq(address(forwarder), expectedForwarder);
+
+        address govOwner = IGovOappSender(govOappSender).owner();
+        vm.startPrank(govOwner);
+        IGovOappSender(govOappSender).setPeer(
+            destinationEndpointId,
+            bytes32(uint256(uint160(address(govOappReceiver))))
+        );
+        IGovOappSender(govOappSender).setCanCallTarget(
+            address(forwarder),
+            destinationEndpointId,
+            bytes32(uint256(uint160(address(govBridgeReceiver)))),
+            true
+        );
+        vm.stopPrank();
     }
 
     function test_constructor_forwarder() public {
@@ -187,6 +188,14 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         assertEq(oracle.getSSR(), currSSR);
         assertEq(oracle.getChi(), currChi);
         assertEq(oracle.getRho(), currRho);
+
+        // Verify the remote oracle conversion rate approximates mainnet sUSDS
+        vm.warp(currRho + 90 days);
+        uint256 remoteRate = oracle.getConversionRate();
+        mainnet.selectFork();
+        vm.warp(currRho + 90 days);
+        uint256 mainnetRate = ISUSDS4626(susds).convertToAssets(1e27);
+        assertApproxEqRel(remoteRate, mainnetRate, 1e12);  // within 0.0001%
     }
 
 }
