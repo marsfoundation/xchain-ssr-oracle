@@ -172,7 +172,7 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
             chi: uint120(currChi),
             rho: uint40(currRho) // timestamp of last drip, doesn't change on `refresh`
         }));
-        forwarder.refresh{ value: fee.nativeFee }(extraOptions);
+        forwarder.refresh{ value: fee.nativeFee }(extraOptions, address(this));
 
         data = forwarder.getLastSeenSUSDSData();
         assertEq(data.ssr,                   currSSR);

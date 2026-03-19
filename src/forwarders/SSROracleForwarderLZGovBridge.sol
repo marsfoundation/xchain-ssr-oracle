@@ -39,14 +39,14 @@ contract SSROracleForwarderLZGovBridge is SSROracleForwarderBase {
         });
     }
 
-    function refresh(bytes calldata extraOptions) public payable returns (MessagingReceipt memory) {
+    function refresh(bytes calldata extraOptions, address refundAddress) public payable returns (MessagingReceipt memory) {
         return LZGovBridgeForwarder.sendMessage({
             govOapp:       govOapp,
             dstEid:        dstEid,
             dstTarget:     l2Oracle,
             message:       _packMessage(),
             extraOptions:  extraOptions,
-            refundAddress: msg.sender,
+            refundAddress: refundAddress,
             fee:           MessagingFee({ nativeFee: msg.value, lzTokenFee: 0 }),
             lzToken:       address(0)
         });
