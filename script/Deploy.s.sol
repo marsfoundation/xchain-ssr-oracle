@@ -9,17 +9,26 @@ import { SSRBalancerRateProviderAdapter }  from "src/adapters/SSRBalancerRatePro
 import { SSRChainlinkRateProviderAdapter } from "src/adapters/SSRChainlinkRateProviderAdapter.sol";
 import { SSRAuthOracle }                   from "src/SSRAuthOracle.sol";
 
-import { SSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/SSROracleForwarderOptimism.sol";
-import { SSROracleForwarderGnosis }                      from "src/forwarders/SSROracleForwarderGnosis.sol";
-import { SSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/SSROracleForwarderArbitrum.sol";
+import { SSROracleForwarderOptimism, OptimismForwarder }   from "src/forwarders/SSROracleForwarderOptimism.sol";
+import { SSROracleForwarderGnosis }                        from "src/forwarders/SSROracleForwarderGnosis.sol";
+import { SSROracleForwarderArbitrum, ArbitrumForwarder }   from "src/forwarders/SSROracleForwarderArbitrum.sol";
+import { SSROracleForwarderLZGovBridge }                   from "src/forwarders/SSROracleForwarderLZGovBridge.sol";
 
-import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
-import { ArbitrumReceiver } from "xchain-helpers/receivers/ArbitrumReceiver.sol";
-import { OptimismReceiver } from "xchain-helpers/receivers/OptimismReceiver.sol";
+import { AMBReceiver }         from "xchain-helpers/receivers/AMBReceiver.sol";
+import { ArbitrumReceiver }    from "xchain-helpers/receivers/ArbitrumReceiver.sol";
+import { OptimismReceiver }    from "xchain-helpers/receivers/OptimismReceiver.sol";
+import { LZGovBridgeReceiver }   from "xchain-helpers/receivers/LZGovBridgeReceiver.sol";
+import { LZGovBridgeForwarder } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
+
+interface IChainLog {
+    function getAddress(bytes32) external view returns (address);
+}
 
 contract Deploy is Script {
 
-    address internal constant SUSDS = 0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD;
+    IChainLog internal constant chainlog = IChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+
+    address internal susds;
 
     function deploy(string memory remoteRpcUrl) internal {
         address deployer = msg.sender;
@@ -30,6 +39,8 @@ contract Deploy is Script {
         uint256 nonce = vm.getNonce(deployer);
 
         vm.createSelectFork(getChain("mainnet").rpcUrl);
+
+        susds = chainlog.getAddress("SUSDS");
 
         vm.startBroadcast();
         address expectedReceiver = vm.computeCreateAddress(deployer, nonce + 1);
@@ -77,7 +88,7 @@ contract DeployOptimism is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new SSROracleForwarderOptimism(SUSDS, receiver, OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM));
+        return address(new SSROracleForwarderOptimism(susds, receiver, OptimismForwarder.L1_CROSS_DOMAIN_OPTIMISM));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -93,7 +104,7 @@ contract DeployBase is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new SSROracleForwarderOptimism(SUSDS, receiver, OptimismForwarder.L1_CROSS_DOMAIN_BASE));
+        return address(new SSROracleForwarderOptimism(susds, receiver, OptimismForwarder.L1_CROSS_DOMAIN_BASE));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -109,7 +120,7 @@ contract DeployWorldChain is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new SSROracleForwarderOptimism(SUSDS, receiver, OptimismForwarder.L1_CROSS_DOMAIN_WORLD_CHAIN));
+        return address(new SSROracleForwarderOptimism(susds, receiver, OptimismForwarder.L1_CROSS_DOMAIN_WORLD_CHAIN));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -125,7 +136,7 @@ contract DeployGnosis is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new SSROracleForwarderGnosis(SUSDS, receiver));
+        return address(new SSROracleForwarderGnosis(susds, receiver));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -141,7 +152,7 @@ contract DeployArbitrumOne is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new SSROracleForwarderArbitrum(SUSDS, receiver, ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE));
+        return address(new SSROracleForwarderArbitrum(susds, receiver, ArbitrumForwarder.L1_CROSS_DOMAIN_ARBITRUM_ONE));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
@@ -157,11 +168,30 @@ contract DeployUnichain is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        return address(new SSROracleForwarderOptimism(SUSDS, receiver, OptimismForwarder.L1_CROSS_DOMAIN_UNICHAIN));
+        return address(new SSROracleForwarderOptimism(susds, receiver, OptimismForwarder.L1_CROSS_DOMAIN_UNICHAIN));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
         return address(new OptimismReceiver(forwarder, oracle));
+    }
+
+}
+
+// NOTE: GovernanceOAppSender and GovernanceOAppReceiver and must be configured separately (e.g setPeer, setCanCallTarget) by the gov oapp owner after deployment.
+contract DeployLZGovBridge is Deploy {
+
+    function run() external {
+        deploy(vm.envString("REMOTE_RPC_URL"));
+    }
+
+    function deployForwarder(address receiver) internal override returns (address) {
+        uint32 dstEid = uint32(vm.envUint("DST_EID"));
+        return address(new SSROracleForwarderLZGovBridge(susds, receiver, chainlog.getAddress("LZ_GOV_SENDER"), dstEid));
+    }
+
+    function deployReceiver(address forwarder, address oracle) internal override returns (address) {
+        address govOappReceiver = vm.envAddress("GOV_OAPP_RECEIVER");
+        return address(new LZGovBridgeReceiver(govOappReceiver, LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM, forwarder, oracle));
     }
 
 }
