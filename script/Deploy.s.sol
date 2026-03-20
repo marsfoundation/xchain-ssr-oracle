@@ -177,7 +177,7 @@ contract DeployUnichain is Deploy {
 
 }
 
-// NOTE: GovernanceOAppSender and GovernanceOAppReceiver and must be configured separately (e.g setPeer, setCanCallTarget) by the gov oapp owner after deployment.
+// NOTE: GovernanceOAppSender and GovernanceOAppReceiver must be configured separately (e.g setPeer, setCanCallTarget) by the gov oapp owner after deployment.
 contract DeployLZGovBridge is Deploy {
 
     function run() external {
