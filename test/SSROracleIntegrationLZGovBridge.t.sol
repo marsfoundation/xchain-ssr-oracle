@@ -8,9 +8,8 @@ import { OptionsBuilder } from "layerzerolabs/oapp-evm/contracts/oapp/libs/Optio
 import { Bridge }                from "xchain-helpers/testing/Bridge.sol";
 import { Domain, DomainHelpers } from "xchain-helpers/testing/Domain.sol";
 import { LZBridgeTesting }      from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
-import { LZForwarder }          from "xchain-helpers/forwarders/LZForwarder.sol";
 import { LZGovBridgeReceiver }  from "xchain-helpers/receivers/LZGovBridgeReceiver.sol";
-import { MessagingFee } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
+import { LZGovBridgeForwarder, MessagingFee } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
 
 import { SSRAuthOracle }                 from "src/SSRAuthOracle.sol";
 import { SSROracleForwarderLZGovBridge } from "src/forwarders/SSROracleForwarderLZGovBridge.sol";
@@ -46,10 +45,9 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
     address susds;
     address govOappSender;
 
-    uint32 sourceEndpointId      = LZForwarder.ENDPOINT_ID_ETHEREUM;
-    uint32 destinationEndpointId = LZForwarder.ENDPOINT_ID_BASE;
-
-    address destinationEndpoint = LZForwarder.ENDPOINT_BASE;
+    uint32  sourceEndpointId      = LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM;
+    uint32  destinationEndpointId = 30184;
+    address destinationEndpoint   = 0x1a44076050125825900e736c501f859c50fE728c;
 
     Domain mainnet;
     Domain remote;
