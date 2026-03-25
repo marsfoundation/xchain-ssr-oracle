@@ -39,6 +39,12 @@ contract SSROracleForwarderLZGovBridge is SSROracleForwarderBase {
         });
     }
 
+    /**
+     * @notice Since LayerZero does not guarantee message ordering, it is advised to:
+     *         1. Call `sUSDS.drip()` and then `refresh()` at least one block after any SSR update,
+     *            ensuring a new `rho` that makes the remote oracle's ordering check effective.
+     *         2. Monitor the remote chain's oracle to verify the update landed correctly.
+     */
     function refresh(bytes calldata extraOptions, address refundAddress) public payable returns (MessagingReceipt memory) {
         return LZGovBridgeForwarder.sendMessage({
             govOapp:       govOapp,
