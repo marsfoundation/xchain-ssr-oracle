@@ -74,10 +74,19 @@ contract SSRAuthOracleTest is Test {
             rho: uint40(rho - 1)
         }));
 
+        // Same rho should also revert (strict >)
+        vm.expectRevert("SSRAuthOracle/invalid-rho");
         oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27),
             rho: uint40(rho)
+        }));
+
+        vm.warp(block.timestamp + 1);
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
+            ssr: uint96(FIVE_PCT_APY_SSR),
+            chi: uint120(1e27),
+            rho: uint40(rho + 1)
         }));
     }
 
