@@ -39,8 +39,8 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
 
     address susds;
 
-    address constant SOURCE_ENDPOINT      = 0x1a44076050125825900e736c501f859c50fE728c;
     uint32  sourceEndpointId      = LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM;
+    address sourceEndpoint        = 0x1a44076050125825900e736c501f859c50fE728c;
     uint32  destinationEndpointId = 30184;
     address destinationEndpoint   = 0x1a44076050125825900e736c501f859c50fE728c;
 
@@ -70,7 +70,7 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         address expectedForwarder     = vm.computeCreateAddress(address(this), nonce + 4);
 
         // --- Mainnet: deploy GovernanceOAppSender ---
-        govOappSender = new GovernanceOAppSenderMock(SOURCE_ENDPOINT, address(this));
+        govOappSender = new GovernanceOAppSenderMock(sourceEndpoint, address(this));
         assertEq(address(govOappSender), expectedGovOappSender);
 
         // --- Remote: deploy all destination contracts ---

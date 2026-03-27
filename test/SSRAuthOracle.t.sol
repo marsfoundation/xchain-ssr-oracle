@@ -65,7 +65,7 @@ contract SSRAuthOracleTest is Test {
         oracle.setMaxSSR(RAY);
     }
 
-    function test_setSUSDSData_rho_decreasing_boundary() public {
+    function test_setSUSDSData_rho_decreasing_or_eq_boundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("SSRAuthOracle/invalid-rho");
         oracle.setSUSDSData(ISSROracle.SUSDSData({

@@ -8,9 +8,9 @@
 
 ## Phase 2: Deploy oracle infrastructure (Foundry)
 
-4. Deploy `SSRAuthOracle` on remote
-5. Deploy `LZGovBridgeReceiver` on remote (`srcAuthority` = precomputed forwarder address)
-6. Deploy `SSROracleForwarderLZGovBridge` on mainnet
+4. Deploy `SSROracleForwarderLZGovBridge` on mainnet
+5. Deploy `SSRAuthOracle` on remote
+6. Deploy `LZGovBridgeReceiver` on remote (`srcAuthority` = precomputed forwarder address)
 7. Grant `DATA_PROVIDER_ROLE` on oracle to `LZGovBridgeReceiver`
 8. `setCanCallTarget(forwarder, dstEid, govBridgeReceiver, true)` on sender
 
