@@ -2,11 +2,11 @@
 
 ## Phase 1: Deploy OApps (via LZ hardhat scripts)
 
-1. Deploy `GovernanceOAppSender` on mainnet + configure routing (DVNs, executor, libraries)
+1. Deploy `GovernanceOAppSender` on mainnet + configure routing (DVNs, executor, libraries) + set enforced options
 2. Deploy `GovernanceOAppReceiver` on remote + configure routing
 3. `setPeer` on both sides
 
-## Phase 2: Deploy oracle infrastructure (Foundry)
+## Phase 2: Deploy oracle infrastructure (see Deploy.s.sol) and whitelist forwarder
 
 4. Deploy `SSROracleForwarderLZGovBridge` on mainnet
 5. Deploy `SSRAuthOracle` on remote
@@ -22,6 +22,6 @@
 
 ## Phase 4: Transfer ownership to governance
 
-12. Transfer sender ownership to pause proxy
+12. Transfer sender ownership to pause proxy + receiver ownership to L2 governance relay
 13. Set endpoint delegate to pause proxy (sender) / L2 governance relay (receiver)
 14. Revoke/transfer `DEFAULT_ADMIN_ROLE` on oracle
