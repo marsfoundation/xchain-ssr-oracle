@@ -23,5 +23,5 @@
 ## Phase 4: Transfer ownership to governance
 
 12. Transfer sender ownership to pause proxy
-13. Set endpoint delegate to pause proxy (on both sender and receiver)
+13. Set endpoint delegate to pause proxy (sender) / L2 governance relay (receiver)
 14. Revoke/transfer `DEFAULT_ADMIN_ROLE` on oracle
