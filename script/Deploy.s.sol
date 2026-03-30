@@ -185,13 +185,14 @@ contract DeployLZGovBridge is Deploy {
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        uint32 dstEid = uint32(vm.envUint("DST_EID"));
-        return address(new SSROracleForwarderLZGovBridge(susds, receiver, chainlog.getAddress("LZ_GOV_SENDER"), dstEid));
+        uint32  dstEid        = uint32(vm.envUint("DST_EID"));
+        address ssrOappSender = vm.envAddress("SSR_OAPP_SENDER");
+        return address(new SSROracleForwarderLZGovBridge(susds, receiver, ssrOappSender, dstEid));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
-        address govOappReceiver = vm.envAddress("GOV_OAPP_RECEIVER");
-        return address(new LZGovBridgeReceiver(govOappReceiver, LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM, forwarder, oracle));
+        address ssrOappReceiver = vm.envAddress("SSR_OAPP_RECEIVER");
+        return address(new LZGovBridgeReceiver(ssrOappReceiver, LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM, forwarder, oracle));
     }
 
 }

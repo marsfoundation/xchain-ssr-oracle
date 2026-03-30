@@ -16,7 +16,7 @@ import { SSROracleForwarderLZGovBridge } from "src/forwarders/SSROracleForwarder
 import { ISSROracle }                    from "src/interfaces/ISSROracle.sol";
 import { ISUSDS }                        from "src/interfaces/ISUSDS.sol";
 
-import { SSROracleLZGovBridgeInit, SSROracleLZGovBridgeConfig } from "deploy/SSROracleLZGovBridgeInit.sol";
+import { SSROracleLZGovBridgeInit, OappSenderConfig, ForwarderConfig } from "deploy/SSROracleLZGovBridgeInit.sol";
 
 import { GovernanceOAppReceiverMock } from "lib/xchain-helpers/test/mocks/lz/GovernanceOAppReceiverMock.sol";
 import { GovernanceOAppSenderMock }   from "test/mocks/GovernanceOAppSenderMock.sol";
@@ -111,26 +111,29 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
             destinationEndpointId,
             bytes32(uint256(uint160(address(govOappReceiver))))
         );
-        govOappSender.setCanCallTarget(
-            address(forwarder),
-            destinationEndpointId,
-            bytes32(uint256(uint160(address(govBridgeReceiver)))),
-            true
-        );
 
+        // Transfer sender ownership and delegate to pause proxy (as in production)
         address pauseProxy = chainlog.getAddress("MCD_PAUSE_PROXY");
+        govOappSender.setDelegate(pauseProxy);
         govOappSender.transferOwnership(pauseProxy);
 
-        // Run init sanity checks and write to chainlog (as pause proxy)
+        // Run init (as pause proxy)
         vm.startPrank(pauseProxy);
-        SSROracleLZGovBridgeInit.init(
+        SSROracleLZGovBridgeInit.initOappSender(
+            address(govOappSender),
+            OappSenderConfig({
+                endpoint: sourceEndpoint
+            })
+        );
+
+        SSROracleLZGovBridgeInit.initForwarder(
             address(forwarder),
             address(govOappSender),
-            SSROracleLZGovBridgeConfig({
-                susds:    susds,
+            true,  // setCanCallTarget
+            ForwarderConfig({
                 receiver: address(govBridgeReceiver),
                 dstEid:   destinationEndpointId,
-                endpoint: sourceEndpoint
+                peer:     bytes32(uint256(uint160(address(govOappReceiver))))
             })
         );
         vm.stopPrank();
@@ -138,8 +141,7 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
 
     function test_init() public {
         mainnet.selectFork();
-        assertEq(chainlog.getAddress("LZ_SSR_FORWARDER"), address(forwarder));
-        assertEq(chainlog.getAddress("LZ_SSR_SENDER"),    address(govOappSender));
+        assertEq(chainlog.getAddress("LZ_SSR_SENDER"), address(govOappSender));
     }
 
     function test_constructor_forwarder() public {
