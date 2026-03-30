@@ -8,9 +8,9 @@
 
 ## Phase 2: Deploy oracle infrastructure (see Deploy.s.sol) and whitelist forwarder
 
-4. Deploy `SSROracleForwarderLZGovBridge` on mainnet
+4. Deploy `SSROracleForwarderLZGovBridge` on mainnet (`receiver` = precomputed `LZGovBridgeReceiver` address)
 5. Deploy `SSRAuthOracle` on remote
-6. Deploy `LZGovBridgeReceiver` on remote (`srcAuthority` = precomputed forwarder address)
+6. Deploy `LZGovBridgeReceiver` on remote
 7. Grant `DATA_PROVIDER_ROLE` on oracle to `LZGovBridgeReceiver`
 8. `setCanCallTarget(forwarder, dstEid, govBridgeReceiver, true)` on sender
 
