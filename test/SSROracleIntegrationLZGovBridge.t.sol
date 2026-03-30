@@ -16,6 +16,8 @@ import { SSROracleForwarderLZGovBridge } from "src/forwarders/SSROracleForwarder
 import { ISSROracle }                    from "src/interfaces/ISSROracle.sol";
 import { ISUSDS }                        from "src/interfaces/ISUSDS.sol";
 
+import { SSROracleLZGovBridgeInit, SSROracleLZGovBridgeConfig } from "deploy/SSROracleLZGovBridgeInit.sol";
+
 import { GovernanceOAppReceiverMock } from "lib/xchain-helpers/test/mocks/lz/GovernanceOAppReceiverMock.sol";
 import { GovernanceOAppSenderMock }   from "test/mocks/GovernanceOAppSenderMock.sol";
 
@@ -115,6 +117,29 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
             bytes32(uint256(uint160(address(govBridgeReceiver)))),
             true
         );
+
+        address pauseProxy = chainlog.getAddress("MCD_PAUSE_PROXY");
+        govOappSender.transferOwnership(pauseProxy);
+
+        // Run init sanity checks and write to chainlog (as pause proxy)
+        vm.startPrank(pauseProxy);
+        SSROracleLZGovBridgeInit.init(
+            address(forwarder),
+            address(govOappSender),
+            SSROracleLZGovBridgeConfig({
+                susds:    susds,
+                receiver: address(govBridgeReceiver),
+                dstEid:   destinationEndpointId,
+                endpoint: sourceEndpoint
+            })
+        );
+        vm.stopPrank();
+    }
+
+    function test_init() public {
+        mainnet.selectFork();
+        assertEq(chainlog.getAddress("LZ_SSR_FORWARDER"), address(forwarder));
+        assertEq(chainlog.getAddress("LZ_SSR_SENDER"),    address(govOappSender));
     }
 
     function test_constructor_forwarder() public {
