@@ -45,12 +45,12 @@ library SSROracleLZGovBridgeInit {
     ) internal {
         GovOappSenderLike _govOappSender = GovOappSenderLike(govOappSender);
 
-        address pauseProxy = chainlog.getAddress("MCD_PAUSE_PROXY");
-        address endpoint   = _govOappSender.endpoint();
+        address pauseProxy     = chainlog.getAddress("MCD_PAUSE_PROXY");
+        address senderEndpoint = _govOappSender.endpoint();
 
-        require(_govOappSender.owner()                          == pauseProxy,   "SSROracleLZGovBridgeInit/owner-mismatch");
-        require(endpoint                                        == cfg.endpoint, "SSROracleLZGovBridgeInit/endpoint-mismatch");
-        require(EndpointLike(endpoint).delegates(govOappSender) == pauseProxy,   "SSROracleLZGovBridgeInit/delegate-mismatch");
+        require(_govOappSender.owner()                                == pauseProxy,   "SSROracleLZGovBridgeInit/owner-mismatch");
+        require(senderEndpoint                                        == cfg.endpoint, "SSROracleLZGovBridgeInit/endpoint-mismatch");
+        require(EndpointLike(senderEndpoint).delegates(govOappSender) == pauseProxy,   "SSROracleLZGovBridgeInit/delegate-mismatch");
 
         chainlog.setAddress("LZ_SSR_SENDER", govOappSender);
     }
@@ -68,6 +68,7 @@ library SSROracleLZGovBridgeInit {
         require(_forwarder.govOapp()  == govOappSender,                "SSROracleLZGovBridgeInit/gov-oapp-mismatch");
         require(_forwarder.dstEid()   == cfg.dstEid,                   "SSROracleLZGovBridgeInit/dst-eid-mismatch");
 
+        // Assume the peer was configured earlier in the spell (or during deployment for the first time)
         GovOappSenderLike _govOappSender = GovOappSenderLike(govOappSender);
         require(_govOappSender.peers(cfg.dstEid) == cfg.peer, "SSROracleLZGovBridgeInit/peer-mismatch");
 
