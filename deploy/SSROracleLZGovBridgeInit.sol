@@ -25,10 +25,6 @@ interface EndpointLike {
     function delegates(address) external view returns (address);
 }
 
-struct OappSenderConfig {
-    address endpoint;
-}
-
 struct ForwarderConfig {
     address receiver;
     uint32  dstEid;
@@ -41,16 +37,16 @@ library SSROracleLZGovBridgeInit {
 
     function initOappSender(
         address govOappSender,
-        OappSenderConfig memory cfg
+        address endpoint
     ) internal {
         GovOappSenderLike _govOappSender = GovOappSenderLike(govOappSender);
 
         address pauseProxy     = chainlog.getAddress("MCD_PAUSE_PROXY");
         address senderEndpoint = _govOappSender.endpoint();
 
-        require(_govOappSender.owner()                                == pauseProxy,   "SSROracleLZGovBridgeInit/owner-mismatch");
-        require(senderEndpoint                                        == cfg.endpoint, "SSROracleLZGovBridgeInit/endpoint-mismatch");
-        require(EndpointLike(senderEndpoint).delegates(govOappSender) == pauseProxy,   "SSROracleLZGovBridgeInit/delegate-mismatch");
+        require(_govOappSender.owner()                                == pauseProxy, "SSROracleLZGovBridgeInit/owner-mismatch");
+        require(senderEndpoint                                        == endpoint,   "SSROracleLZGovBridgeInit/endpoint-mismatch");
+        require(EndpointLike(senderEndpoint).delegates(govOappSender) == pauseProxy, "SSROracleLZGovBridgeInit/delegate-mismatch");
 
         chainlog.setAddress("LZ_SSR_SENDER", govOappSender);
     }

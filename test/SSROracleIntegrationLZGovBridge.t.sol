@@ -16,7 +16,7 @@ import { SSROracleForwarderLZGovBridge } from "src/forwarders/SSROracleForwarder
 import { ISSROracle }                    from "src/interfaces/ISSROracle.sol";
 import { ISUSDS }                        from "src/interfaces/ISUSDS.sol";
 
-import { SSROracleLZGovBridgeInit, OappSenderConfig, ForwarderConfig } from "deploy/SSROracleLZGovBridgeInit.sol";
+import { SSROracleLZGovBridgeInit, ForwarderConfig } from "deploy/SSROracleLZGovBridgeInit.sol";
 
 import { GovernanceOAppReceiverMock } from "lib/xchain-helpers/test/mocks/lz/GovernanceOAppReceiverMock.sol";
 import { GovernanceOAppSenderMock }   from "test/mocks/GovernanceOAppSenderMock.sol";
@@ -124,9 +124,7 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         vm.startPrank(pauseProxy);
         SSROracleLZGovBridgeInit.initOappSender(
             address(govOappSender),
-            OappSenderConfig({
-                endpoint: sourceEndpoint
-            })
+            sourceEndpoint
         );
 
         SSROracleLZGovBridgeInit.initForwarder(
