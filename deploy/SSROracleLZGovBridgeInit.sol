@@ -58,7 +58,7 @@ library SSROracleLZGovBridgeInit {
     function initForwarder(
         address                forwarder,
         address                govOappSender,
-        bool                   setCanCall, // might not be needed initially if the forwarder was set during govOappSender deployment (which also allows testing)
+        bool                   setCanCall, // should be false initially if the forwarder was set during govOappSender deployment (which also allows testing)
         ForwarderConfig memory cfg
     ) internal {
         SSROracleForwarderLZGovBridgeLike _forwarder = SSROracleForwarderLZGovBridgeLike(forwarder);
