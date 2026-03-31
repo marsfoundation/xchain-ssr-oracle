@@ -66,18 +66,10 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         remote = getChain("base").createFork();
         bridge = LZBridgeTesting.createLZBridge(mainnet, remote);
 
-        // Precompute addresses (nonce is shared across forks for persistent contracts)
-        uint256 nonce = vm.getNonce(address(this));
-        address expectedGovOappSender = vm.computeCreateAddress(address(this), nonce);
-        address expectedForwarder     = vm.computeCreateAddress(address(this), nonce + 4);
-
-        // --- Mainnet: deploy GovernanceOAppSender ---
+        // --- Pre-deploy OApp mocks
         govOappSender = new GovernanceOAppSenderMock(sourceEndpoint, address(this));
-        assertEq(address(govOappSender), expectedGovOappSender);
 
-        // --- Remote: deploy all destination contracts ---
         remote.selectFork();
-
         govOappReceiver = new GovernanceOAppReceiverMock(
             sourceEndpointId,
             bytes32(uint256(uint160(address(govOappSender)))),
@@ -85,34 +77,45 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
             address(this)
         );
 
-        oracle = new SSRAuthOracle();
-
-        govBridgeReceiver = new LZGovBridgeReceiver(
-            address(govOappReceiver),
-            sourceEndpointId,
-            expectedForwarder,
-            address(oracle)
-        );
-
-        oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(govBridgeReceiver));
-
-        // --- Mainnet: deploy forwarder + configure GovernanceOAppSender ---
         mainnet.selectFork();
-
-        forwarder = new SSROracleForwarderLZGovBridge(
-            susds,
-            address(govBridgeReceiver),
-            address(govOappSender),
-            destinationEndpointId
-        );
-        assertEq(address(forwarder), expectedForwarder);
-
         govOappSender.setPeer(
             destinationEndpointId,
             bytes32(uint256(uint160(address(govOappReceiver))))
         );
 
-        // Transfer sender ownership and delegate to pause proxy (as in production)
+        // --- Deploy.s.sol flow starts here ---
+        // Note that nonce accounting here is different since foundry testing uses a shared nonce between forks
+
+        uint256 nonce = vm.getNonce(address(this));
+        address expectedReceiver = vm.computeCreateAddress(address(this), nonce + 2); // forwarder(+0), oracle(+1), receiver(+2)
+
+        forwarder = new SSROracleForwarderLZGovBridge(
+            susds,
+            expectedReceiver,
+            address(govOappSender),
+            destinationEndpointId
+        );
+
+        // Select remote → deploy oracle, receiver, configure roles
+        remote.selectFork();
+        oracle = new SSRAuthOracle();
+
+        govBridgeReceiver = new LZGovBridgeReceiver(
+            address(govOappReceiver),
+            sourceEndpointId,
+            address(forwarder),
+            address(oracle)
+        );
+        assertEq(address(govBridgeReceiver), expectedReceiver);
+
+        oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(govBridgeReceiver));
+        oracle.renounceRole(oracle.DEFAULT_ADMIN_ROLE(), address(this));
+
+        // Note that during the first deployment we are likely to call setCanCallTarget here (instead of in initForwarder)
+        // and perform tests before transferring ownerships and delegates
+
+        // --- Transfer sender ownership and delegate to pause proxy (as in production, though mainnet only here) ---
+        mainnet.selectFork();
         address pauseProxy = chainlog.getAddress("MCD_PAUSE_PROXY");
         govOappSender.setDelegate(pauseProxy);
         govOappSender.transferOwnership(pauseProxy);
@@ -142,6 +145,11 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
     function test_init() public {
         mainnet.selectFork();
         assertEq(chainlog.getAddress("LZ_SSR_SENDER"), address(govOappSender));
+        assertTrue(govOappSender.canCallTarget(
+            address(forwarder),
+            destinationEndpointId,
+            bytes32(uint256(uint160(address(govBridgeReceiver))))
+        ));
     }
 
     function test_constructor_forwarder() public {
