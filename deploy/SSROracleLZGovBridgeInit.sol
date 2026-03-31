@@ -74,7 +74,7 @@ library SSROracleLZGovBridgeInit {
 
         require(_govOappSender.canCallTarget(forwarder, cfg.dstEid, bytes32(uint256(uint160(cfg.receiver)))), "SSROracleLZGovBridgeInit/canCallTarget-mismatch");
 
-        // We do not write to the chainlog, as with the existing SSR forwarders
+        // We do not write to the chainlog, consistent with the existing SSR forwarders
     }
 
 }
