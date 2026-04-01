@@ -53,9 +53,9 @@ contract SSRAuthOracle is AccessControl, SSROracleBase, ISSRAuthOracle {
 
         // Perform sanity checks to minimize damage in case of malicious data being proposed
 
-        // Enforce non-decreasing values of rho in case of message reordering
-        // The same timestamp is allowed as the other values will only change upon increasing rho
-        require(nextData.rho >= previousData.rho, 'SSRAuthOracle/invalid-rho');
+        // Enforce strictly increasing rho to prevent out-of-order messages
+        // (e.g. on bridges without ordering guarantees) from overwriting newer data
+        require(nextData.rho > previousData.rho, 'SSRAuthOracle/invalid-rho');
 
         // `chi` must be non-decreasing
         require(nextData.chi >= previousData.chi, 'SSRAuthOracle/invalid-chi');

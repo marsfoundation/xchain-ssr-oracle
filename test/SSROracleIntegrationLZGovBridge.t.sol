@@ -16,7 +16,10 @@ import { SSROracleForwarderLZGovBridge } from "src/forwarders/SSROracleForwarder
 import { ISSROracle }                    from "src/interfaces/ISSROracle.sol";
 import { ISUSDS }                        from "src/interfaces/ISUSDS.sol";
 
+import { SSROracleLZGovBridgeInit, ForwarderConfig } from "deploy/SSROracleLZGovBridgeInit.sol";
+
 import { GovernanceOAppReceiverMock } from "lib/xchain-helpers/test/mocks/lz/GovernanceOAppReceiverMock.sol";
+import { GovernanceOAppSenderMock }   from "test/mocks/GovernanceOAppSenderMock.sol";
 
 interface IChainLog {
     function getAddress(bytes32) external view returns (address);
@@ -24,12 +27,6 @@ interface IChainLog {
 
 interface ISUSDS4626 {
     function convertToAssets(uint256 shares) external view returns (uint256);
-}
-
-interface IGovOappSender {
-    function owner() external view returns (address);
-    function setPeer(uint32 _eid, bytes32 _peer) external;
-    function setCanCallTarget(address _srcSender, uint32 _dstEid, bytes32 _dstTarget, bool _canCall) external;
 }
 
 contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
@@ -43,9 +40,9 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
     IChainLog constant chainlog = IChainLog(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     address susds;
-    address govOappSender;
 
     uint32  sourceEndpointId      = LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM;
+    address sourceEndpoint        = 0x1a44076050125825900e736c501f859c50fE728c;
     uint32  destinationEndpointId = 30184;
     address destinationEndpoint   = 0x1a44076050125825900e736c501f859c50fE728c;
 
@@ -57,66 +54,100 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
 
     SSRAuthOracle oracle;
 
+    GovernanceOAppSenderMock   govOappSender;
     GovernanceOAppReceiverMock govOappReceiver;
     LZGovBridgeReceiver        govBridgeReceiver;
 
     function setUp() public {
         mainnet = getChain("mainnet").createSelectFork();
 
-        susds         = chainlog.getAddress("SUSDS");
-        govOappSender = chainlog.getAddress("LZ_GOV_SENDER");
+        susds = chainlog.getAddress("SUSDS");
 
         remote = getChain("base").createFork();
         bridge = LZBridgeTesting.createLZBridge(mainnet, remote);
 
-        // Precompute forwarder address (nonce is shared across forks for persistent contracts)
-        address expectedForwarder = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 3);
+        // --- Pre-deploy OApp mocks
+        govOappSender = new GovernanceOAppSenderMock(sourceEndpoint, address(this));
 
-        // --- Remote: deploy all destination contracts ---
         remote.selectFork();
-
         govOappReceiver = new GovernanceOAppReceiverMock(
             sourceEndpointId,
-            bytes32(uint256(uint160(govOappSender))),
+            bytes32(uint256(uint160(address(govOappSender)))),
             destinationEndpoint,
             address(this)
         );
 
+        mainnet.selectFork();
+        govOappSender.setPeer(
+            destinationEndpointId,
+            bytes32(uint256(uint160(address(govOappReceiver))))
+        );
+
+        // --- Deploy.s.sol flow starts here ---
+        // Note that nonce accounting here is different since foundry testing uses a shared nonce between forks
+
+        uint256 nonce = vm.getNonce(address(this));
+        address expectedReceiver = vm.computeCreateAddress(address(this), nonce + 2); // forwarder(+0), oracle(+1), receiver(+2)
+
+        forwarder = new SSROracleForwarderLZGovBridge(
+            susds,
+            expectedReceiver,
+            address(govOappSender),
+            destinationEndpointId
+        );
+
+        // Select remote → deploy oracle, receiver, configure roles
+        remote.selectFork();
         oracle = new SSRAuthOracle();
 
         govBridgeReceiver = new LZGovBridgeReceiver(
             address(govOappReceiver),
             sourceEndpointId,
-            expectedForwarder,
+            address(forwarder),
             address(oracle)
         );
+        assertEq(address(govBridgeReceiver), expectedReceiver);
 
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), address(govBridgeReceiver));
+        oracle.renounceRole(oracle.DEFAULT_ADMIN_ROLE(), address(this));
 
-        // --- Mainnet: deploy forwarder + configure GovernanceOAppSender ---
+        // Note that during the first deployment we are likely to call setCanCallTarget here (instead of in initForwarder)
+        // and perform tests before transferring ownerships and delegates
+
+        // --- Transfer sender ownership and delegate to pause proxy (as in production, though mainnet only here) ---
         mainnet.selectFork();
+        address pauseProxy = chainlog.getAddress("MCD_PAUSE_PROXY");
+        govOappSender.setDelegate(pauseProxy);
+        govOappSender.transferOwnership(pauseProxy);
 
-        forwarder = new SSROracleForwarderLZGovBridge(
-            susds,
-            address(govBridgeReceiver),
-            govOappSender,
-            destinationEndpointId
+        // Run init (as pause proxy)
+        vm.startPrank(pauseProxy);
+        SSROracleLZGovBridgeInit.initOappSender(
+            address(govOappSender),
+            sourceEndpoint
         );
-        assertEq(address(forwarder), expectedForwarder);
 
-        address govOwner = IGovOappSender(govOappSender).owner();
-        vm.startPrank(govOwner);
-        IGovOappSender(govOappSender).setPeer(
-            destinationEndpointId,
-            bytes32(uint256(uint160(address(govOappReceiver))))
-        );
-        IGovOappSender(govOappSender).setCanCallTarget(
+        SSROracleLZGovBridgeInit.initForwarder(
             address(forwarder),
-            destinationEndpointId,
-            bytes32(uint256(uint160(address(govBridgeReceiver)))),
-            true
+            address(govOappSender),
+            true,  // setCanCallTarget
+            ForwarderConfig({
+                receiver: address(govBridgeReceiver),
+                dstEid:   destinationEndpointId,
+                peer:     bytes32(uint256(uint160(address(govOappReceiver))))
+            })
         );
         vm.stopPrank();
+    }
+
+    function test_init() public {
+        mainnet.selectFork();
+        assertEq(chainlog.getAddress("LZ_SSR_SENDER"), address(govOappSender));
+        assertTrue(govOappSender.canCallTarget(
+            address(forwarder),
+            destinationEndpointId,
+            bytes32(uint256(uint160(address(govBridgeReceiver))))
+        ));
     }
 
     function test_constructor_forwarder() public {
@@ -125,13 +156,13 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         SSROracleForwarderLZGovBridge f = new SSROracleForwarderLZGovBridge(
             susds,
             makeAddr("receiver"),
-            govOappSender,
+            address(govOappSender),
             destinationEndpointId
         );
 
         assertEq(address(f.susds()),  susds);
         assertEq(f.l2Oracle(),        makeAddr("receiver"));
-        assertEq(f.govOapp(),         govOappSender);
+        assertEq(f.govOapp(),         address(govOappSender));
         assertEq(f.dstEid(),          destinationEndpointId);
     }
 
@@ -180,7 +211,7 @@ contract SSROracleIntegrationLZGovBridgeBaseTest is Test {
         assertEq(forwarder.getLastSeenChi(), currChi);
         assertEq(forwarder.getLastSeenRho(), currRho);
 
-        bridge.relayMessagesToDestination(true, govOappSender, address(govOappReceiver));
+        bridge.relayMessagesToDestination(true, address(govOappSender), address(govOappReceiver));
         vm.warp(currRho + 30 days);
 
         assertEq(oracle.getSSR(), currSSR);
