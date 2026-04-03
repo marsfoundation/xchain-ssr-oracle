@@ -12,13 +12,12 @@ import { SSRAuthOracle }                   from "src/SSRAuthOracle.sol";
 import { SSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/SSROracleForwarderOptimism.sol";
 import { SSROracleForwarderGnosis }                      from "src/forwarders/SSROracleForwarderGnosis.sol";
 import { SSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/SSROracleForwarderArbitrum.sol";
-import { SSROracleForwarderLZGovBridge }                 from "src/forwarders/SSROracleForwarderLZGovBridge.sol";
+import { SSROracleForwarderLZ }                          from "src/forwarders/SSROracleForwarderLZ.sol";
 
 import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
 import { ArbitrumReceiver } from "xchain-helpers/receivers/ArbitrumReceiver.sol";
 import { OptimismReceiver } from "xchain-helpers/receivers/OptimismReceiver.sol";
-import { LZGovBridgeReceiver }  from "xchain-helpers/receivers/LZGovBridgeReceiver.sol";
-import { LZGovBridgeForwarder } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
+import { LZReceiver }       from "xchain-helpers/receivers/LZReceiver.sol";
 
 contract Deploy is Script {
 
@@ -171,22 +170,31 @@ contract DeployUnichain is Deploy {
 
 }
 
-// NOTE: GovernanceOAppSender and GovernanceOAppReceiver must be configured separately (e.g setPeer, setCanCallTarget) by the gov oapp owner after deployment.
-contract DeployLZGovBridge is Deploy {
+contract DeployLZ is Deploy {
 
     function run() external {
         deploy(vm.envString("REMOTE_RPC_URL"));
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        uint32  dstEid        = uint32(vm.envUint("DST_EID"));
-        address ssrOappSender = vm.envAddress("SSR_OAPP_SENDER");
-        return address(new SSROracleForwarderLZGovBridge(SUSDS, receiver, ssrOappSender, dstEid));
+        return address(new SSROracleForwarderLZ({
+            _susds:    SUSDS,
+            _l2Oracle: receiver,
+            _endpoint: vm.envAddress("LZ_ENDPOINT"),
+            _owner:    msg.sender, // Consider renouncing or moving to a governance proxy after configuration is done
+            _dstEid:   uint32(vm.envUint("DST_EID"))
+        }));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
-        address ssrOappReceiver = vm.envAddress("SSR_OAPP_RECEIVER");
-        return address(new LZGovBridgeReceiver(ssrOappReceiver, LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM, forwarder, oracle));
+        return address(new LZReceiver({
+            _destinationEndpoint : vm.envAddress("LZ_ENDPOINT_REMOTE"),
+            _srcEid              : uint32(vm.envUint("SRC_EID")),
+            _sourceAuthority     : bytes32(uint256(uint160(forwarder))),
+            _target              : oracle,
+            _delegate            : vm.envAddress("DELEGATE_REMOTE"),
+            _owner               : vm.envAddress("OWNER_REMOTE")
+        }));
     }
 
 }
