@@ -180,7 +180,7 @@ contract DeployLZ is Deploy {
         return address(new SSROracleForwarderLZ({
             _susds:    SUSDS,
             _l2Oracle: receiver,
-            _endpoint: vm.envAddress("LZ_ENDPOINT"),
+            _endpoint: 0x1a44076050125825900e736c501f859c50fE728c,
             _owner:    msg.sender, // Consider renouncing or moving to a governance proxy after configuration is done
             _dstEid:   uint32(vm.envUint("DST_EID"))
         }));
@@ -189,7 +189,7 @@ contract DeployLZ is Deploy {
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
         return address(new LZReceiver({
             _destinationEndpoint : vm.envAddress("LZ_ENDPOINT_REMOTE"),
-            _srcEid              : uint32(vm.envUint("SRC_EID")),
+            _srcEid              : uint32(30101),
             _sourceAuthority     : bytes32(uint256(uint160(forwarder))),
             _target              : oracle,
             _delegate            : vm.envAddress("DELEGATE_REMOTE"),

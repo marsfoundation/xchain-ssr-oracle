@@ -6,7 +6,7 @@
 
 ## Phase 2: Configure OApps
 
-2. Call `setPeer` on forwarder (mainnet) with receiver address
+2. Wire the forwarder (mainnet) (setPeer with receiver address and setEnforcedOptions)
 3. Configure LZ routing (DVNs, executor, libraries) on both endpoints
 
 ## Phase 3: Test end-to-end
