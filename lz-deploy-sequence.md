@@ -18,5 +18,5 @@
 
 6. Update delegate on mainnet endpoint for the forwarder (`setDelegate`)
 7. Update delegate on remote endpoint for the receiver (`setDelegate`)
-8. Transfer or renounce forwarder ownership on mainnet
-9. Transfer or renounce receiver ownership on remote
+8. Transfer forwarder ownership on mainnet
+9. Transfer receiver ownership on remote
