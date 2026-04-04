@@ -181,7 +181,8 @@ contract DeployLZ is Deploy {
             _susds:    SUSDS,
             _l2Oracle: receiver,
             _endpoint: 0x1a44076050125825900e736c501f859c50fE728c,
-            _owner:    msg.sender, // Consider renouncing or moving to a governance proxy after configuration is done
+            _delegate: msg.sender,
+            _owner:    msg.sender,
             _dstEid:   uint32(vm.envUint("DST_EID"))
         }));
     }
@@ -192,8 +193,8 @@ contract DeployLZ is Deploy {
             _srcEid              : uint32(30101),
             _sourceAuthority     : bytes32(uint256(uint160(forwarder))),
             _target              : oracle,
-            _delegate            : vm.envAddress("DELEGATE_REMOTE"),
-            _owner               : vm.envAddress("OWNER_REMOTE")
+            _delegate            : msg.sender,
+            _owner               : msg.sender
         }));
     }
 

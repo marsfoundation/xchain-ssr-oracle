@@ -22,9 +22,10 @@ contract SSROracleForwarderLZ is SSROracleForwarderBase, OAppSender, OAppOptions
         address _susds,
         address _l2Oracle,
         address _endpoint,
+        address _delegate,
         address _owner,
         uint32  _dstEid
-    ) SSROracleForwarderBase(_susds, _l2Oracle) OAppCore(_endpoint, _owner) Ownable(_owner) {
+    ) SSROracleForwarderBase(_susds, _l2Oracle) OAppCore(_endpoint, _delegate) Ownable(_owner) {
         dstEid = _dstEid;
     }
 

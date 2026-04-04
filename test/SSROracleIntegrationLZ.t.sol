@@ -67,6 +67,7 @@ contract SSROracleIntegrationLZTest is Test {
             expectedReceiver,
             SOURCE_ENDPOINT,
             address(this),
+            address(this),
             DESTINATION_EID
         );
 
@@ -102,6 +103,7 @@ contract SSROracleIntegrationLZTest is Test {
             susds,
             makeAddr("receiver"),
             SOURCE_ENDPOINT,
+            address(this),
             address(this),
             DESTINATION_EID
         );
