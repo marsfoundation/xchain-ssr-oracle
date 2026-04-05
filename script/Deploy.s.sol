@@ -50,7 +50,7 @@ contract Deploy is Script {
         // Configure
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), receiver);
 
-        // Note that if admin role is entirely revoked maxSSR can not be set
+        // Note that if admin role is entirely revoked, maxSSR cannot be set and DATA_PROVIDER_ROLE cannot be changed
         if (admin != address(0)) {
             oracle.grantRole(oracle.DEFAULT_ADMIN_ROLE(), admin);
         }
