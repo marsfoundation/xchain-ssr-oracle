@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeCast } from "openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
+import { Ownable }  from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import { OAppSender, OAppCore, MessagingFee, MessagingReceipt } from "layerzerolabs/oapp-evm/contracts/oapp/OAppSender.sol";
 import { OAppOptionsType3 } from "layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
