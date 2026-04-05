@@ -20,3 +20,8 @@
 7. Update delegate on remote endpoint for the receiver (`setDelegate`)
 8. Transfer forwarder ownership on mainnet
 9. Transfer receiver ownership on remote
+
+## Notes on upgradeability
+
+- If the oracle admin role is revoked, its `DATA_PROVIDER_ROLE` cannot be changed, meaning a new oracle must be deployed to change its data source.
+- Upgrading the forwarder requires replacing all receivers (since `LZReceiver.sourceAuthority` is immutable). If oracle admin is revoked, this also means replacing all oracles.
