@@ -12,13 +12,12 @@ import { SSRAuthOracle }                   from "src/SSRAuthOracle.sol";
 import { SSROracleForwarderOptimism, OptimismForwarder } from "src/forwarders/SSROracleForwarderOptimism.sol";
 import { SSROracleForwarderGnosis }                      from "src/forwarders/SSROracleForwarderGnosis.sol";
 import { SSROracleForwarderArbitrum, ArbitrumForwarder } from "src/forwarders/SSROracleForwarderArbitrum.sol";
-import { SSROracleForwarderLZGovBridge }                 from "src/forwarders/SSROracleForwarderLZGovBridge.sol";
+import { SSROracleForwarderLZ }                          from "src/forwarders/SSROracleForwarderLZ.sol";
 
 import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
 import { ArbitrumReceiver } from "xchain-helpers/receivers/ArbitrumReceiver.sol";
 import { OptimismReceiver } from "xchain-helpers/receivers/OptimismReceiver.sol";
-import { LZGovBridgeReceiver }  from "xchain-helpers/receivers/LZGovBridgeReceiver.sol";
-import { LZGovBridgeForwarder } from "xchain-helpers/forwarders/LZGovBridgeForwarder.sol";
+import { LZReceiver }       from "xchain-helpers/receivers/LZReceiver.sol";
 
 contract Deploy is Script {
 
@@ -51,7 +50,7 @@ contract Deploy is Script {
         // Configure
         oracle.grantRole(oracle.DATA_PROVIDER_ROLE(), receiver);
 
-        // Note that if admin role is entirely revoked maxSSR can not be set
+        // Note that if admin role is entirely revoked, maxSSR cannot be set and DATA_PROVIDER_ROLE cannot be changed
         if (admin != address(0)) {
             oracle.grantRole(oracle.DEFAULT_ADMIN_ROLE(), admin);
         }
@@ -171,22 +170,32 @@ contract DeployUnichain is Deploy {
 
 }
 
-// NOTE: GovernanceOAppSender and GovernanceOAppReceiver must be configured separately (e.g setPeer, setCanCallTarget) by the gov oapp owner after deployment.
-contract DeployLZGovBridge is Deploy {
+contract DeployLZ is Deploy {
 
     function run() external {
         deploy(vm.envString("REMOTE_RPC_URL"));
     }
 
     function deployForwarder(address receiver) internal override returns (address) {
-        uint32  dstEid        = uint32(vm.envUint("DST_EID"));
-        address ssrOappSender = vm.envAddress("SSR_OAPP_SENDER");
-        return address(new SSROracleForwarderLZGovBridge(SUSDS, receiver, ssrOappSender, dstEid));
+        return address(new SSROracleForwarderLZ({
+            _susds:    SUSDS,
+            _l2Oracle: receiver,
+            _endpoint: 0x1a44076050125825900e736c501f859c50fE728c,
+            _delegate: msg.sender,
+            _owner:    msg.sender,
+            _dstEid:   uint32(vm.envUint("DST_EID"))
+        }));
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
-        address ssrOappReceiver = vm.envAddress("SSR_OAPP_RECEIVER");
-        return address(new LZGovBridgeReceiver(ssrOappReceiver, LZGovBridgeForwarder.ENDPOINT_ID_ETHEREUM, forwarder, oracle));
+        return address(new LZReceiver({
+            _destinationEndpoint : vm.envAddress("LZ_ENDPOINT_REMOTE"),
+            _srcEid              : uint32(30101),
+            _sourceAuthority     : bytes32(uint256(uint160(forwarder))),
+            _target              : oracle,
+            _delegate            : msg.sender,
+            _owner               : msg.sender
+        }));
     }
 
 }
