@@ -8,7 +8,7 @@ import { OptionsBuilder } from "layerzerolabs/oapp-evm/contracts/oapp/libs/Optio
 import { Bridge }                from "xchain-helpers/testing/Bridge.sol";
 import { Domain, DomainHelpers } from "xchain-helpers/testing/Domain.sol";
 import { LZBridgeTesting }      from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
-import { LZReceiver }           from "xchain-helpers/receivers/LZReceiver.sol";
+import { LZComposeReceiver }    from "xchain-helpers/receivers/LZComposeReceiver.sol";
 import { MessagingFee }         from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 
 import { SSRAuthOracle }         from "src/SSRAuthOracle.sol";
@@ -47,7 +47,7 @@ contract SSROracleIntegrationLZTest is Test {
 
     SSROracleForwarderLZ forwarder;
     SSRAuthOracle        oracle;
-    LZReceiver           receiver;
+    LZComposeReceiver    receiver;
 
     function setUp() public {
         mainnet = getChain("mainnet").createSelectFork();
@@ -75,7 +75,7 @@ contract SSROracleIntegrationLZTest is Test {
 
         oracle = new SSRAuthOracle();
 
-        receiver = new LZReceiver({
+        receiver = new LZComposeReceiver({
             _destinationEndpoint : DESTINATION_ENDPOINT,
             _srcEid              : SOURCE_EID,
             _sourceAuthority     : bytes32(uint256(uint160(address(forwarder)))),
@@ -137,7 +137,9 @@ contract SSROracleIntegrationLZTest is Test {
         assertEq(data.chi, 0);
         assertEq(data.rho, 0);
 
-        bytes memory extraOptions = OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0);
+        bytes memory extraOptions = OptionsBuilder.newOptions()
+            .addExecutorLzReceiveOption(200_000, 0)
+            .addExecutorLzComposeOption(0, 200_000, 0);
         MessagingFee memory fee = forwarder.quote(extraOptions);
         vm.deal(address(this), fee.nativeFee);
 
@@ -155,6 +157,13 @@ contract SSROracleIntegrationLZTest is Test {
         assertEq(data.rho, currRho);
 
         bridge.relayMessagesToDestination(true, address(forwarder), address(receiver));
+
+        // Oracle should NOT be updated yet (deferred to lzCompose)
+        assertEq(oracle.getSSR(), 0);
+        assertEq(oracle.getChi(), 0);
+        assertEq(oracle.getRho(), 0);
+
+        bridge.relayComposeMessagesToDestination(true);
         vm.warp(currRho + 30 days);
 
         assertEq(oracle.getSSR(), currSSR);
