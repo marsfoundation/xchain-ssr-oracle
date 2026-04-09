@@ -17,7 +17,7 @@ import { SSROracleForwarderLZ }                          from "src/forwarders/SS
 import { AMBReceiver }      from "xchain-helpers/receivers/AMBReceiver.sol";
 import { ArbitrumReceiver } from "xchain-helpers/receivers/ArbitrumReceiver.sol";
 import { OptimismReceiver } from "xchain-helpers/receivers/OptimismReceiver.sol";
-import { LZReceiver }       from "xchain-helpers/receivers/LZReceiver.sol";
+import { LZComposeReceiver } from "xchain-helpers/receivers/LZComposeReceiver.sol";
 
 contract Deploy is Script {
 
@@ -188,7 +188,7 @@ contract DeployLZ is Deploy {
     }
 
     function deployReceiver(address forwarder, address oracle) internal override returns (address) {
-        return address(new LZReceiver({
+        return address(new LZComposeReceiver({
             _destinationEndpoint : vm.envAddress("LZ_ENDPOINT_REMOTE"),
             _srcEid              : uint32(30101),
             _sourceAuthority     : bytes32(uint256(uint160(forwarder))),
