@@ -20,6 +20,10 @@ interface IChainLog {
     function getAddress(bytes32) external view returns (address);
 }
 
+interface IEndpoint {
+    function delegates(address) external view returns (address);
+}
+
 interface ISUSDS4626 {
     function convertToAssets(uint256 shares) external view returns (uint256);
 }
@@ -99,11 +103,12 @@ contract SSROracleIntegrationLZTest is Test {
     function test_constructor_forwarder() public {
         mainnet.selectFork();
 
+        address delegate_ = makeAddr("testDelegate");
         SSROracleForwarderLZ f = new SSROracleForwarderLZ(
             susds,
             makeAddr("receiver"),
             SOURCE_ENDPOINT,
-            address(this),
+            delegate_,
             address(this),
             DESTINATION_EID
         );
@@ -113,6 +118,7 @@ contract SSROracleIntegrationLZTest is Test {
         assertEq(f.dstEid(),            DESTINATION_EID);
         assertEq(address(f.endpoint()), SOURCE_ENDPOINT);
         assertEq(f.owner(),             address(this));
+        assertEq(IEndpoint(SOURCE_ENDPOINT).delegates(address(f)), delegate_);
     }
 
     function test_xchain_relay() public {
