@@ -65,7 +65,7 @@ contract SSRAuthOracleTest is Test {
         oracle.setMaxSSR(RAY);
     }
 
-    function test_setSUSDSData_rho_decreasing_boundary() public {
+    function test_setSUSDSData_rho_decreasing_or_eq_boundary() public {
         uint256 rho = oracle.getRho();
         vm.expectRevert("SSRAuthOracle/invalid-rho");
         oracle.setSUSDSData(ISSROracle.SUSDSData({
@@ -74,10 +74,18 @@ contract SSRAuthOracleTest is Test {
             rho: uint40(rho - 1)
         }));
 
+        // Same rho should also revert (strict >)
+        vm.expectRevert("SSRAuthOracle/invalid-rho");
         oracle.setSUSDSData(ISSROracle.SUSDSData({
             ssr: uint96(FIVE_PCT_APY_SSR),
             chi: uint120(1e27),
             rho: uint40(rho)
+        }));
+
+        oracle.setSUSDSData(ISSROracle.SUSDSData({
+            ssr: uint96(FIVE_PCT_APY_SSR),
+            chi: uint120(1e27),
+            rho: uint40(rho + 1)
         }));
     }
 
